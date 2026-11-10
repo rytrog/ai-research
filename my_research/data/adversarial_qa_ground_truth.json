@@ -1,0 +1,92 @@
+[
+  {
+    "query_id": "FB_ADV_01",
+    "question": "What was the Operating Income or Loss (GAAP) for Chronos Technologies Group for the three months ended September 30, 2026, and what was the corresponding operating margin?",
+    "target_metric": "OPERATING INCOME / (LOSS) (EBIT)",
+    "target_period": "Three Months Ended September 30, 2026",
+    "gold_answer": "Operating loss of -$158.20 million (reported as (158.20) in millions of USD), with an operating margin of -24.05%.",
+    "gold_numeric_value": -158.20,
+    "loss_amount": -158.20,
+    "operating_margin_pct": -24.05,
+    "unit_scale": "$ USD Millions",
+    "trap_type": "Parenthetical Negative Number & Unit Scale Trap (Naive RAG reads as positive +$158.20 or misses the $ Millions multiplier)."
+  },
+  {
+    "query_id": "FB_ADV_02",
+    "question": "How many diluted weighted average common shares were outstanding for the three months ended September 30, 2026, and how does this compare to the three months ended September 30, 2025?",
+    "target_metric": "Weighted Average Common Shares — Diluted",
+    "target_period": "Three Months Ended September 30, 2026 vs 2025",
+    "gold_answer": "120,000,000 shares (reported as 120,000 in thousands) for Q3 2026, compared to 120,900,000 shares (reported as 120,900 in thousands) for Q3 2025.",
+    "gold_numeric_value": 120000000,
+    "shares_q3_2026": 120000000,
+    "shares_q3_2025": 120900000,
+    "unit_scale": "Shares (reported in Thousands)",
+    "trap_type": "Mid-Table Unit Shift Trap (Global header says $ Millions, but shares are in Thousands; naive RAG outputs $120,000 or 120,000 shares)."
+  },
+  {
+    "query_id": "FB_ADV_03",
+    "question": "What were the total Product Revenues for the nine months ended September 30, 2026 versus the three months ended September 30, 2026?",
+    "target_metric": "Subtotal: Product Revenues",
+    "target_period": "Nine Months Ended Sept 30, 2026 vs Three Months Ended Sept 30, 2026",
+    "gold_answer": "Nine months ended September 30, 2026: $1,919.80 million; Three months ended September 30, 2026: $611.20 million.",
+    "gold_numeric_value": 1919.80,
+    "product_rev_9m": 1919.80,
+    "product_rev_3m": 611.20,
+    "unit_scale": "$ USD Millions",
+    "trap_type": "Super-Header Disambiguation Trap (Three Months vs. Nine Months super-headers across the same 2026 column)."
+  },
+  {
+    "query_id": "FB_ADV_04",
+    "question": "What was the Diluted Earnings Per Share (EPS) for the nine months ended September 30, 2026?",
+    "target_metric": "Diluted Earnings / (Loss) Per Share",
+    "target_period": "Nine Months Ended September 30, 2026",
+    "gold_answer": "Net loss of -$0.97 per diluted share (reported as (0.97) in dollars per share).",
+    "gold_numeric_value": -0.97,
+    "unit_scale": "$ per share (USD)",
+    "trap_type": "Parenthetical Negative + Currency Scale Trap (Global header is Millions, but EPS is per-share in Dollars; naive RAG outputs -$0.97 Million)."
+  },
+  {
+    "query_id": "FB_ADV_05",
+    "question": "What liability reserve did Chronos Technologies recognize for Lithography Photomask Recalibration during the three months ended September 30, 2026, and what was the cause according to Footnote 2?",
+    "target_metric": "Lithography Photomask Recalibration Reserve",
+    "target_period": "Three Months Ended September 30, 2026",
+    "gold_answer": "$48.50 million liability reserve. Footnote 2 states this represents accrual for reimbursable lithography photomask recalibration and fabrication re-tooling obligations disputed under arbitration with TFP and settled on October 2, 2026.",
+    "gold_numeric_value": -48.50,
+    "statement_amount": -48.50,
+    "reserve_magnitude": 48.50,
+    "unit_scale": "$ USD Millions",
+    "trap_type": "Cross-Chunk Footnote Decoupling Trap (Table cell [2] severed from explanatory text at bottom of filing)."
+  },
+  {
+    "query_id": "FB_ADV_06",
+    "question": "What was Chronos Technologies' Free Cash Flow (FCF) for the three months ended September 30, 2026, and how was it calculated from operating cash flows and CapEx?",
+    "target_metric": "Free Cash Flow (FCF)",
+    "target_period": "Three Months Ended September 30, 2026",
+    "gold_answer": "-$103.60 million (Operating Cash Flow of -$41.20M plus CapEx outflow of -$62.40M: -$41.20M + (-$62.40M) = -$103.60M).",
+    "gold_numeric_value": -103.60,
+    "operating_cash_flow": -41.20,
+    "capex_outflow": -62.40,
+    "unit_scale": "$ USD Millions",
+    "trap_type": "Accounting Flow & Derived Invariant Trap (Operating Cash Flow plus CapEx outflow = FCF; naive chunking loses the derived formula)."
+  },
+  {
+    "query_id": "FB_ADV_07",
+    "question": "Why did Royalty and IP Licensing Income drop from $20.80 million in Q3 2025 to $4.95 million in Q3 2026?",
+    "target_metric": "Royalty & IP Licensing Income",
+    "target_period": "Three Months Ended September 30, 2026 vs 2025",
+    "gold_answer": "Under Footnote 1 and Article 8.2 of the Amended IP Master Agreement, the contractual royalty rate dropped automatically from 6.25% to 1.80% on August 19, 2026, after consecutive wafer defect densities exceeded 0.42 defects/cm2 (reaching 0.51 defects/cm2 in Q3 2026).",
+    "gold_numeric_value": 4.95,
+    "unit_scale": "$ USD Millions",
+    "trap_type": "Multi-Hop Cross-Table Condition Binding Trap (Connecting row 7 [1] with footnote [1] and row 47 wafer defect density)."
+  },
+  {
+    "query_id": "FB_ADV_08",
+    "question": "What were the Total Global Full-Time Employees at September 30, 2026?",
+    "target_metric": "Total Global Full-Time Employees",
+    "target_period": "September 30, 2026",
+    "gold_answer": "8,420 full-time employees.",
+    "gold_numeric_value": 8420,
+    "unit_scale": "Headcount Units",
+    "trap_type": "Unit Mismatch Trap (Global header is $ Millions; naive RAG outputs $8,420 million or 8,420,000)."
+  }
+]

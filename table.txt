@@ -1,0 +1,25 @@
+# CHAPTER 4: CONSOLIDATED SEGMENT PERFORMANCE AND COMPREHENSIVE FINANCIAL AUDIT (FY 2026)
+
+Section 4.2: Master Multi-Segment Operating Statement, Defect Metrics, and Restated GAAP Performance
+
+All monetary amounts in the table below are expressed in millions of U.S. dollars ($ USD Millions), except per-share amounts (EPS in $), wafer defect densities (defects/cm²), and percentage figures (%). All figures reflect restated GAAP revisions approved by the Audit Committee on October 2, 2026.
+
+| Financial & Operational Metric | Q1 2026 (Actual) | Q2 2026 (Restated) | Q3 2026 (Restated) | Q4 2026 (Projected) | FY 2026 (Total / Run-Rate) | YoY Change (%) | Audit Compliance Status |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| Optical Interconnect Gross Revenue (Kronos-7) | $412.40 | $389.15 | $274.80 | $310.00 | $1,386.35 | -18.4% | Fully Certified |
+| Cayman Meridian Vault Net Royalty Income | $25.78 | $14.60 | $4.95 | $5.20 | $50.53 | -76.2% | Subject to Clawback |
+| Commercial Silicon Foundry Licensing Fees | $48.20 | $42.50 | $31.10 | $35.00 | $156.80 | -26.8% | Fully Certified |
+| Consolidated Gross Revenue Subtotal | $486.38 | $446.25 | $310.85 | $350.20 | $1,593.68 | -23.1% | Fully Certified |
+| Cost of Goods Sold (COGS - Wafer Fab) | $218.60 | $224.10 | $198.40 | $205.00 | $846.10 | +8.2% | Fully Certified |
+| Photomask Recalibration Liability Reserve | $0.00 | $19.20 | $48.50 | $12.00 | $79.70 | +100.0% | Restatement Trigger |
+| Consolidated Research & Development (R&D) | $134.10 | $148.90 | $162.35 | $155.00 | $600.35 | +21.9% | Fully Certified |
+| SG&A Corporate Overhead Expense | $58.40 | $61.20 | $59.80 | $60.50 | $239.90 | +4.1% | Fully Certified |
+| Total Operating Expenses (OpEx) | $411.10 | $453.40 | $469.05 | $432.50 | $1,766.05 | +26.5% | Fully Certified |
+| Operating Income / (GAAP Operating Loss) | $75.28 | -$7.15 | -$158.20 | -$82.30 | -$172.37 | -284.1% | Restatement Trigger |
+| Provision for Corporate Income Taxes | $16.50 | -$1.50 | -$34.80 | -$18.10 | -$37.90 | -292.7% | Fully Certified |
+| Consolidated Net GAAP Income / (Loss) | $58.78 | -$5.65 | -$123.40 | -$64.20 | -$134.47 | -280.5% | Restatement Trigger |
+| GAAP Diluted Earnings Per Share (EPS in $) | $1.18 | $0.74 | -$0.31 | -$0.16 | $1.45 | -128.2% | Restatement Trigger |
+| Measured Wafer Defect Density (defects/cm²) | 0.29 | 0.46 | 0.51 | 0.38 | 0.41 (Avg) | +75.9% | Threshold Breached |
+| Shipped Optical Transceiver Units (k units) | 128.5 | 114.2 | 76.4 | 92.0 | 411.1 | -33.1% | Fully Certified |
+| Silicon Photonic Fab Yield Efficiency (%) | 94.2% | 88.6% | 79.4% | 84.5% | 86.7% (Avg) | -14.8% | Sub-Threshold Warning |
+| Post-Op Brain Tumor LITT Margin Precision (%) | 91.3% | 91.8% | 92.4% | 93.0% | 92.1% (Avg) | +1.2% | Clinical Phase IIb |

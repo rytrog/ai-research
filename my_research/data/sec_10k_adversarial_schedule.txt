@@ -1,0 +1,105 @@
+========================================================================================================================
+UNITED STATES SECURITIES AND EXCHANGE COMMISSION
+WASHINGTON, D.C. 20549
+FORM 10-Q / QUARTERLY REPORT PURSUANT TO SECTION 13 OR 15(d) OF THE SECURITIES EXCHANGE ACT OF 1934
+FOR THE QUARTERLY PERIOD ENDED SEPTEMBER 30, 2026
+
+CHRONOS TECHNOLOGIES GROUP INC.
+(Exact name of registrant as specified in its charter)
+
+ITEM 1. FINANCIAL STATEMENTS
+CONSOLIDATED STATEMENTS OF OPERATIONS, COMPREHENSIVE FINANCIAL PERFORMANCE, AND SEGMENT REVENUE
+(Unaudited — All monetary amounts in millions of U.S. Dollars ($ USD Millions), except per-share data,
+share counts in thousands, percentages, and headcount units, unless otherwise explicitly noted)
+========================================================================================================================
+
+                                                                 Three Months Ended             Nine Months Ended
+                                                                    September 30,                 September 30,
+Financial & Operational Line Item                                 2026          2025            2026          2025
+------------------------------------------------------------------------------------------------------------------------
+CONSOLIDATED NET REVENUES BY SEGMENT:
+  Optical Interconnect Systems (Kronos-7)                     $  274.80     $  336.50       $  945.10     $  892.40
+  Advanced Semiconductor Heterogeneous Packaging                 142.30        118.20          418.60        341.00
+  Biomedical Laser Subsystems (K7-MED)                            68.40         42.10          189.50        114.70
+  Autonomous Mobility LiDAR Sensor Arrays                         31.20         28.90           88.40         79.20
+  Enterprise Cloud Infrastructure Accelerators                    94.50         84.10          278.20        232.50
+    Subtotal: Product Revenues                                   611.20        609.80        1,919.80      1,659.80
+  Royalty & IP Licensing Income [1]                                4.95         20.80           45.33         61.40
+  Maintenance, Warranty & Technical Support Services              41.60         35.40          122.40        101.80
+    Subtotal: Service & License Revenues                          46.55         56.20          167.73        163.20
+TOTAL CONSOLIDATED NET REVENUES                                  657.75        666.00        2,087.53      1,823.00
+
+GEOGRAPHIC REGION REVENUE CONCENTRATION:
+  North America (United States & Canada)                         315.40        319.60        1,001.80        875.00
+  Greater China & Asia-Pacific Foundry Region                    198.50        206.40          630.20        565.10
+  Europe, Middle East & Africa (EMEA)                            108.60        104.20          345.10        285.40
+  Latin America & Rest of World Markets                           35.25         35.80          110.43         97.50
+TOTAL GEOGRAPHIC NET REVENUES                                    657.75        666.00        2,087.53      1,823.00
+
+COST OF REVENUES & DIRECT OPERATING LIABILITIES:
+  Direct Wafer Fabrication & Foundries Materials                (248.50)      (232.10)        (762.40)      (658.20)
+  Production Assembly, Packaging & Direct Labor                  (88.20)       (81.40)        (264.10)      (234.50)
+  Lithography Photomask Recalibration Reserve [2]                (48.50)         0.00          (67.70)         0.00
+  Service, Warranty & Field Retrofit Fulfillment                 (24.30)       (21.20)         (71.80)       (58.40)
+  Amortization of Acquired Developed Technology                  (18.60)       (14.20)         (54.30)       (42.60)
+TOTAL COST OF CONSOLIDATED REVENUES                             (428.10)      (348.90)      (1,220.30)      (993.70)
+
+GROSS PROFIT / (LOSS)                                            229.65        317.10          867.23        829.30
+Gross Margin Percentage (%)                                       34.92%        47.61%          41.54%        45.49%
+
+OPERATING EXPENSES (OPEX):
+  Research & Development (R&D) Expense                          (162.35)      (134.10)        (473.60)      (392.40)
+  Selling, General & Administrative (SG&A)                      (114.20)      (102.40)        (338.90)      (298.50)
+  In-Process R&D Asset Impairment Charges [3]                    (85.00)         0.00          (85.00)         0.00
+  Litigation Contingency & Regulatory Defense                    (21.50)       (12.30)         (44.20)       (24.60)
+  Severance, Restructuring & Facility Consolidation               (4.80)        (2.10)         (12.40)        (5.80)
+TOTAL OPERATING EXPENSES                                        (387.85)      (250.90)        (954.10)      (721.30)
+
+OPERATING INCOME / (LOSS) (EBIT)                                (158.20)        66.20          (86.87)       108.00
+Operating Margin Percentage (%)                                  (24.05)%        9.94%          (4.16)%        5.92%
+
+NON-OPERATING & OTHER INCOME / (EXPENSE):
+  Interest Income on Liquid Cash & Marketable Debt                 4.10          3.80           12.40         10.50
+  Interest Expense on Senior 5.25% Term Notes due 2031           (16.50)       (16.50)         (49.50)       (49.50)
+  Foreign Exchange Remeasurement Gain / (Loss)                    (2.80)         1.40           (4.20)         2.10
+  Gain / (Loss) on Strategic Minority Equity Investments           1.20         (0.60)           3.80          1.10
+TOTAL OTHER NON-OPERATING INCOME / (EXPENSE), NET                (14.00)       (11.90)         (37.50)       (35.80)
+
+INCOME / (LOSS) BEFORE INCOME TAXES                             (172.20)        54.30         (124.37)        72.20
+Provision for / (Benefit from) Income Taxes                       14.00        (11.40)           8.50        (15.20)
+Effective Corporate Income Tax Rate (%)                            8.13%        20.99%           6.83%        21.05%
+
+CONSOLIDATED NET INCOME / (LOSS) (GAAP)                         (158.20)        42.90         (115.87)        57.00
+Net Profit Margin (%)                                            (24.05)%        6.44%          (5.55)%        3.13%
+
+COMMON SHARE COUNT & PER SHARE METRICS:
+  Weighted Average Common Shares — Basic (in Thousands)         120,000       118,500         119,800       118,200
+  Dilutive Effect of Vested RSUs & Stock Options                      0         2,400               0         2,350
+  Weighted Average Common Shares — Diluted (in Thousands)       120,000       120,900         119,800       120,550
+
+BASIC & DILUTED EARNINGS / (LOSS) PER SHARE (EPS in USD):
+  Basic Earnings / (Loss) Per Share (in $ per share)          $   (1.32)    $    0.36       $   (0.97)    $    0.48
+  Diluted Earnings / (Loss) Per Share (in $ per share)        $   (1.32)    $    0.35       $   (0.97)    $    0.47
+
+SUPPLEMENTAL NON-GAAP & OPERATIONAL PERFORMANCE DATA:
+  Adjusted EBITDA (Non-GAAP Measure) [4]                      $  (32.40)    $  118.50       $  124.60     $  248.20
+  Operating Cash Flows (in $ USD Millions)                       (41.20)        84.60           38.40        192.50
+  Capital Expenditures (CapEx) (in $ USD Millions)               (62.40)       (54.20)        (178.50)      (142.10)
+  Free Cash Flow (FCF) (in $ USD Millions)                      (103.60)        30.40         (140.10)        50.40
+  Total Global Full-Time Employees (Headcount Units)              8,420         7,850           8,420         7,850
+  Fab Measured Wafer Defect Density (defects / cm2) [5]            0.51          0.28            0.48          0.26
+  R&D Expense as % of Net Revenues (%)                            24.68%        20.14%          22.69%        21.53%
+========================================================================================================================
+
+EXPLANATORY FOOTNOTES TO FINANCIAL SCHEDULE:
+[1] Reflects gross wafer shipment billings received from Taiwan Foundry Partners (TFP). Under Article 8.2 of the 
+    Amended IP Master Agreement, the contractual royalty rate dropped automatically from 6.25% to 1.80% on August 19, 
+    2026, following the formal certification of consecutive wafer defect densities exceeding 0.42 defects/cm2.
+[2] Represents accrual for reimbursable lithography photomask recalibration and fabrication re-tooling obligations 
+    disputed under arbitration with TFP and settled on October 2, 2026.
+[3] Non-cash write-down associated with the abandoned 800G optical DSP program acquired via the legacy Terabit SAS deal.
+[4] Non-GAAP Adjusted EBITDA excludes share-based compensation expense ($18.4M for Q3 2026), asset impairment charges 
+    ($85.0M), photomask reserve liabilities ($48.5M), and technology amortization ($18.6M).
+[5] Represents aggregate mean defect density measured across silicon-photonic active wafer runs at the Kaohsiung 
+    foundry line during the respective trailing production quarters.
+========================================================================================================================

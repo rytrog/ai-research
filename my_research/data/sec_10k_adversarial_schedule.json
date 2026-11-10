@@ -1,0 +1,950 @@
+{
+  "document_metadata": {
+    "company_name": "Chronos Technologies Group Inc.",
+    "form_type": "10-Q",
+    "fiscal_period_ended": "September 30, 2026",
+    "global_unit_default": "Millions of U.S. Dollars ($ USD Millions)",
+    "super_periods": [
+      {
+        "super_period": "Three Months Ended September 30",
+        "columns": [
+          "2026",
+          "2025"
+        ]
+      },
+      {
+        "super_period": "Nine Months Ended September 30",
+        "columns": [
+          "2026",
+          "2025"
+        ]
+      }
+    ],
+    "column_keys": [
+      "three_months_ended_sept_30_2026",
+      "three_months_ended_sept_30_2025",
+      "nine_months_ended_sept_30_2026",
+      "nine_months_ended_sept_30_2025"
+    ]
+  },
+  "rows": [
+    {
+      "row_id": 1,
+      "category": "CONSOLIDATED NET REVENUES BY SEGMENT",
+      "metric": "Optical Interconnect Systems (Kronos-7)",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 274.8,
+        "three_months_ended_sept_30_2025": 336.5,
+        "nine_months_ended_sept_30_2026": 945.1,
+        "nine_months_ended_sept_30_2025": 892.4
+      }
+    },
+    {
+      "row_id": 2,
+      "category": "CONSOLIDATED NET REVENUES BY SEGMENT",
+      "metric": "Advanced Semiconductor Heterogeneous Packaging",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 142.3,
+        "three_months_ended_sept_30_2025": 118.2,
+        "nine_months_ended_sept_30_2026": 418.6,
+        "nine_months_ended_sept_30_2025": 341.0
+      }
+    },
+    {
+      "row_id": 3,
+      "category": "CONSOLIDATED NET REVENUES BY SEGMENT",
+      "metric": "Biomedical Laser Subsystems (K7-MED)",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 68.4,
+        "three_months_ended_sept_30_2025": 42.1,
+        "nine_months_ended_sept_30_2026": 189.5,
+        "nine_months_ended_sept_30_2025": 114.7
+      }
+    },
+    {
+      "row_id": 4,
+      "category": "CONSOLIDATED NET REVENUES BY SEGMENT",
+      "metric": "Autonomous Mobility LiDAR Sensor Arrays",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 31.2,
+        "three_months_ended_sept_30_2025": 28.9,
+        "nine_months_ended_sept_30_2026": 88.4,
+        "nine_months_ended_sept_30_2025": 79.2
+      }
+    },
+    {
+      "row_id": 5,
+      "category": "CONSOLIDATED NET REVENUES BY SEGMENT",
+      "metric": "Enterprise Cloud Infrastructure Accelerators",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 94.5,
+        "three_months_ended_sept_30_2025": 84.1,
+        "nine_months_ended_sept_30_2026": 278.2,
+        "nine_months_ended_sept_30_2025": 232.5
+      }
+    },
+    {
+      "row_id": 6,
+      "category": "CONSOLIDATED NET REVENUES BY SEGMENT",
+      "metric": "Subtotal: Product Revenues",
+      "is_header": false,
+      "is_subtotal": true,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 611.2,
+        "three_months_ended_sept_30_2025": 609.8,
+        "nine_months_ended_sept_30_2026": 1919.8,
+        "nine_months_ended_sept_30_2025": 1659.8
+      }
+    },
+    {
+      "row_id": 7,
+      "category": "CONSOLIDATED NET REVENUES BY SEGMENT",
+      "metric": "Royalty & IP Licensing Income",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [
+        "[1]"
+      ],
+      "values": {
+        "three_months_ended_sept_30_2026": 4.95,
+        "three_months_ended_sept_30_2025": 20.8,
+        "nine_months_ended_sept_30_2026": 45.33,
+        "nine_months_ended_sept_30_2025": 61.4
+      }
+    },
+    {
+      "row_id": 8,
+      "category": "CONSOLIDATED NET REVENUES BY SEGMENT",
+      "metric": "Maintenance, Warranty & Technical Support Services",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 41.6,
+        "three_months_ended_sept_30_2025": 35.4,
+        "nine_months_ended_sept_30_2026": 122.4,
+        "nine_months_ended_sept_30_2025": 101.8
+      }
+    },
+    {
+      "row_id": 9,
+      "category": "CONSOLIDATED NET REVENUES BY SEGMENT",
+      "metric": "Subtotal: Service & License Revenues",
+      "is_header": false,
+      "is_subtotal": true,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 46.55,
+        "three_months_ended_sept_30_2025": 56.2,
+        "nine_months_ended_sept_30_2026": 167.73,
+        "nine_months_ended_sept_30_2025": 163.2
+      }
+    },
+    {
+      "row_id": 10,
+      "category": "CONSOLIDATED NET REVENUES BY SEGMENT",
+      "metric": "TOTAL CONSOLIDATED NET REVENUES",
+      "is_header": false,
+      "is_subtotal": true,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 657.75,
+        "three_months_ended_sept_30_2025": 666.0,
+        "nine_months_ended_sept_30_2026": 2087.53,
+        "nine_months_ended_sept_30_2025": 1823.0
+      }
+    },
+    {
+      "row_id": 11,
+      "category": "GEOGRAPHIC REGION REVENUE CONCENTRATION",
+      "metric": "North America (United States & Canada)",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 315.4,
+        "three_months_ended_sept_30_2025": 319.6,
+        "nine_months_ended_sept_30_2026": 1001.8,
+        "nine_months_ended_sept_30_2025": 875.0
+      }
+    },
+    {
+      "row_id": 12,
+      "category": "GEOGRAPHIC REGION REVENUE CONCENTRATION",
+      "metric": "Greater China & Asia-Pacific Foundry Region",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 198.5,
+        "three_months_ended_sept_30_2025": 206.4,
+        "nine_months_ended_sept_30_2026": 630.2,
+        "nine_months_ended_sept_30_2025": 565.1
+      }
+    },
+    {
+      "row_id": 13,
+      "category": "GEOGRAPHIC REGION REVENUE CONCENTRATION",
+      "metric": "Europe, Middle East & Africa (EMEA)",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 108.6,
+        "three_months_ended_sept_30_2025": 104.2,
+        "nine_months_ended_sept_30_2026": 345.1,
+        "nine_months_ended_sept_30_2025": 285.4
+      }
+    },
+    {
+      "row_id": 14,
+      "category": "GEOGRAPHIC REGION REVENUE CONCENTRATION",
+      "metric": "Latin America & Rest of World Markets",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 35.25,
+        "three_months_ended_sept_30_2025": 35.8,
+        "nine_months_ended_sept_30_2026": 110.43,
+        "nine_months_ended_sept_30_2025": 97.5
+      }
+    },
+    {
+      "row_id": 15,
+      "category": "GEOGRAPHIC REGION REVENUE CONCENTRATION",
+      "metric": "TOTAL GEOGRAPHIC NET REVENUES",
+      "is_header": false,
+      "is_subtotal": true,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 657.75,
+        "three_months_ended_sept_30_2025": 666.0,
+        "nine_months_ended_sept_30_2026": 2087.53,
+        "nine_months_ended_sept_30_2025": 1823.0
+      }
+    },
+    {
+      "row_id": 16,
+      "category": "COST OF REVENUES & DIRECT OPERATING LIABILITIES",
+      "metric": "Direct Wafer Fabrication & Foundries Materials",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": -248.5,
+        "three_months_ended_sept_30_2025": -232.1,
+        "nine_months_ended_sept_30_2026": -762.4,
+        "nine_months_ended_sept_30_2025": -658.2
+      }
+    },
+    {
+      "row_id": 17,
+      "category": "COST OF REVENUES & DIRECT OPERATING LIABILITIES",
+      "metric": "Production Assembly, Packaging & Direct Labor",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": -88.2,
+        "three_months_ended_sept_30_2025": -81.4,
+        "nine_months_ended_sept_30_2026": -264.1,
+        "nine_months_ended_sept_30_2025": -234.5
+      }
+    },
+    {
+      "row_id": 18,
+      "category": "COST OF REVENUES & DIRECT OPERATING LIABILITIES",
+      "metric": "Lithography Photomask Recalibration Reserve",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [
+        "[2]"
+      ],
+      "values": {
+        "three_months_ended_sept_30_2026": -48.5,
+        "three_months_ended_sept_30_2025": 0.0,
+        "nine_months_ended_sept_30_2026": -67.7,
+        "nine_months_ended_sept_30_2025": 0.0
+      }
+    },
+    {
+      "row_id": 19,
+      "category": "COST OF REVENUES & DIRECT OPERATING LIABILITIES",
+      "metric": "Service, Warranty & Field Retrofit Fulfillment",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": -24.3,
+        "three_months_ended_sept_30_2025": -21.2,
+        "nine_months_ended_sept_30_2026": -71.8,
+        "nine_months_ended_sept_30_2025": -58.4
+      }
+    },
+    {
+      "row_id": 20,
+      "category": "COST OF REVENUES & DIRECT OPERATING LIABILITIES",
+      "metric": "Amortization of Acquired Developed Technology",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": -18.6,
+        "three_months_ended_sept_30_2025": -14.2,
+        "nine_months_ended_sept_30_2026": -54.3,
+        "nine_months_ended_sept_30_2025": -42.6
+      }
+    },
+    {
+      "row_id": 21,
+      "category": "COST OF REVENUES & DIRECT OPERATING LIABILITIES",
+      "metric": "TOTAL COST OF CONSOLIDATED REVENUES",
+      "is_header": false,
+      "is_subtotal": true,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": -428.1,
+        "three_months_ended_sept_30_2025": -348.9,
+        "nine_months_ended_sept_30_2026": -1220.3,
+        "nine_months_ended_sept_30_2025": -993.7
+      }
+    },
+    {
+      "row_id": 22,
+      "category": "PROFITABILITY",
+      "metric": "GROSS PROFIT / (LOSS)",
+      "is_header": false,
+      "is_subtotal": true,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 229.65,
+        "three_months_ended_sept_30_2025": 317.1,
+        "nine_months_ended_sept_30_2026": 867.23,
+        "nine_months_ended_sept_30_2025": 829.3
+      }
+    },
+    {
+      "row_id": 23,
+      "category": "PROFITABILITY",
+      "metric": "Gross Margin Percentage (%)",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "percentage",
+      "unit_scale": "Units",
+      "unit_symbol": "%",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 34.92,
+        "three_months_ended_sept_30_2025": 47.61,
+        "nine_months_ended_sept_30_2026": 41.54,
+        "nine_months_ended_sept_30_2025": 45.49
+      }
+    },
+    {
+      "row_id": 24,
+      "category": "OPERATING EXPENSES (OPEX)",
+      "metric": "Research & Development (R&D) Expense",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": -162.35,
+        "three_months_ended_sept_30_2025": -134.1,
+        "nine_months_ended_sept_30_2026": -473.6,
+        "nine_months_ended_sept_30_2025": -392.4
+      }
+    },
+    {
+      "row_id": 25,
+      "category": "OPERATING EXPENSES (OPEX)",
+      "metric": "Selling, General & Administrative (SG&A)",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": -114.2,
+        "three_months_ended_sept_30_2025": -102.4,
+        "nine_months_ended_sept_30_2026": -338.9,
+        "nine_months_ended_sept_30_2025": -298.5
+      }
+    },
+    {
+      "row_id": 26,
+      "category": "OPERATING EXPENSES (OPEX)",
+      "metric": "In-Process R&D Asset Impairment Charges",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [
+        "[3]"
+      ],
+      "values": {
+        "three_months_ended_sept_30_2026": -85.0,
+        "three_months_ended_sept_30_2025": 0.0,
+        "nine_months_ended_sept_30_2026": -85.0,
+        "nine_months_ended_sept_30_2025": 0.0
+      }
+    },
+    {
+      "row_id": 27,
+      "category": "OPERATING EXPENSES (OPEX)",
+      "metric": "Litigation Contingency & Regulatory Defense",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": -21.5,
+        "three_months_ended_sept_30_2025": -12.3,
+        "nine_months_ended_sept_30_2026": -44.2,
+        "nine_months_ended_sept_30_2025": -24.6
+      }
+    },
+    {
+      "row_id": 28,
+      "category": "OPERATING EXPENSES (OPEX)",
+      "metric": "Severance, Restructuring & Facility Consolidation",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": -4.8,
+        "three_months_ended_sept_30_2025": -2.1,
+        "nine_months_ended_sept_30_2026": -12.4,
+        "nine_months_ended_sept_30_2025": -5.8
+      }
+    },
+    {
+      "row_id": 29,
+      "category": "OPERATING EXPENSES (OPEX)",
+      "metric": "TOTAL OPERATING EXPENSES",
+      "is_header": false,
+      "is_subtotal": true,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": -387.85,
+        "three_months_ended_sept_30_2025": -250.9,
+        "nine_months_ended_sept_30_2026": -954.1,
+        "nine_months_ended_sept_30_2025": -721.3
+      }
+    },
+    {
+      "row_id": 30,
+      "category": "OPERATING PROFITABILITY",
+      "metric": "OPERATING INCOME / (LOSS) (EBIT)",
+      "is_header": false,
+      "is_subtotal": true,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": -158.2,
+        "three_months_ended_sept_30_2025": 66.2,
+        "nine_months_ended_sept_30_2026": -86.87,
+        "nine_months_ended_sept_30_2025": 108.0
+      }
+    },
+    {
+      "row_id": 31,
+      "category": "OPERATING PROFITABILITY",
+      "metric": "Operating Margin Percentage (%)",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "percentage",
+      "unit_scale": "Units",
+      "unit_symbol": "%",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": -24.05,
+        "three_months_ended_sept_30_2025": 9.94,
+        "nine_months_ended_sept_30_2026": -4.16,
+        "nine_months_ended_sept_30_2025": 5.92
+      }
+    },
+    {
+      "row_id": 32,
+      "category": "NON-OPERATING & OTHER INCOME / (EXPENSE)",
+      "metric": "Interest Income on Liquid Cash & Marketable Debt",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 4.1,
+        "three_months_ended_sept_30_2025": 3.8,
+        "nine_months_ended_sept_30_2026": 12.4,
+        "nine_months_ended_sept_30_2025": 10.5
+      }
+    },
+    {
+      "row_id": 33,
+      "category": "NON-OPERATING & OTHER INCOME / (EXPENSE)",
+      "metric": "Interest Expense on Senior 5.25% Term Notes due 2031",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": -16.5,
+        "three_months_ended_sept_30_2025": -16.5,
+        "nine_months_ended_sept_30_2026": -49.5,
+        "nine_months_ended_sept_30_2025": -49.5
+      }
+    },
+    {
+      "row_id": 34,
+      "category": "NON-OPERATING & OTHER INCOME / (EXPENSE)",
+      "metric": "Foreign Exchange Remeasurement Gain / (Loss)",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": -2.8,
+        "three_months_ended_sept_30_2025": 1.4,
+        "nine_months_ended_sept_30_2026": -4.2,
+        "nine_months_ended_sept_30_2025": 2.1
+      }
+    },
+    {
+      "row_id": 35,
+      "category": "NON-OPERATING & OTHER INCOME / (EXPENSE)",
+      "metric": "Gain / (Loss) on Strategic Minority Equity Investments",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 1.2,
+        "three_months_ended_sept_30_2025": -0.6,
+        "nine_months_ended_sept_30_2026": 3.8,
+        "nine_months_ended_sept_30_2025": 1.1
+      }
+    },
+    {
+      "row_id": 36,
+      "category": "NON-OPERATING & OTHER INCOME / (EXPENSE)",
+      "metric": "TOTAL OTHER NON-OPERATING INCOME / (EXPENSE), NET",
+      "is_header": false,
+      "is_subtotal": true,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": -14.0,
+        "three_months_ended_sept_30_2025": -11.9,
+        "nine_months_ended_sept_30_2026": -37.5,
+        "nine_months_ended_sept_30_2025": -35.8
+      }
+    },
+    {
+      "row_id": 37,
+      "category": "TAX & PRE-TAX INCOME",
+      "metric": "INCOME / (LOSS) BEFORE INCOME TAXES",
+      "is_header": false,
+      "is_subtotal": true,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": -172.2,
+        "three_months_ended_sept_30_2025": 54.3,
+        "nine_months_ended_sept_30_2026": -124.37,
+        "nine_months_ended_sept_30_2025": 72.2
+      }
+    },
+    {
+      "row_id": 38,
+      "category": "TAX & PRE-TAX INCOME",
+      "metric": "Provision for / (Benefit from) Income Taxes",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 14.0,
+        "three_months_ended_sept_30_2025": -11.4,
+        "nine_months_ended_sept_30_2026": 8.5,
+        "nine_months_ended_sept_30_2025": -15.2
+      }
+    },
+    {
+      "row_id": 39,
+      "category": "TAX & PRE-TAX INCOME",
+      "metric": "Effective Corporate Income Tax Rate (%)",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "percentage",
+      "unit_scale": "Units",
+      "unit_symbol": "%",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 8.13,
+        "three_months_ended_sept_30_2025": 20.99,
+        "nine_months_ended_sept_30_2026": 6.83,
+        "nine_months_ended_sept_30_2025": 21.05
+      }
+    },
+    {
+      "row_id": 40,
+      "category": "NET EARNINGS",
+      "metric": "CONSOLIDATED NET INCOME / (LOSS) (GAAP)",
+      "is_header": false,
+      "is_subtotal": true,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": -158.2,
+        "three_months_ended_sept_30_2025": 42.9,
+        "nine_months_ended_sept_30_2026": -115.87,
+        "nine_months_ended_sept_30_2025": 57.0
+      }
+    },
+    {
+      "row_id": 41,
+      "category": "NET EARNINGS",
+      "metric": "Net Profit Margin (%)",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "percentage",
+      "unit_scale": "Units",
+      "unit_symbol": "%",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": -24.05,
+        "three_months_ended_sept_30_2025": 6.44,
+        "nine_months_ended_sept_30_2026": -5.55,
+        "nine_months_ended_sept_30_2025": 3.13
+      }
+    },
+    {
+      "row_id": 42,
+      "category": "COMMON SHARE COUNT & PER SHARE METRICS",
+      "metric": "Weighted Average Common Shares \u2014 Basic",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "count",
+      "unit_scale": "Thousands",
+      "unit_symbol": "Shares",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 120000,
+        "three_months_ended_sept_30_2025": 118500,
+        "nine_months_ended_sept_30_2026": 119800,
+        "nine_months_ended_sept_30_2025": 118200
+      }
+    },
+    {
+      "row_id": 43,
+      "category": "COMMON SHARE COUNT & PER SHARE METRICS",
+      "metric": "Dilutive Effect of Vested RSUs & Stock Options",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "count",
+      "unit_scale": "Thousands",
+      "unit_symbol": "Shares",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 0,
+        "three_months_ended_sept_30_2025": 2400,
+        "nine_months_ended_sept_30_2026": 0,
+        "nine_months_ended_sept_30_2025": 2350
+      }
+    },
+    {
+      "row_id": 44,
+      "category": "COMMON SHARE COUNT & PER SHARE METRICS",
+      "metric": "Weighted Average Common Shares \u2014 Diluted",
+      "is_header": false,
+      "is_subtotal": true,
+      "unit_type": "count",
+      "unit_scale": "Thousands",
+      "unit_symbol": "Shares",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 120000,
+        "three_months_ended_sept_30_2025": 120900,
+        "nine_months_ended_sept_30_2026": 119800,
+        "nine_months_ended_sept_30_2025": 120550
+      }
+    },
+    {
+      "row_id": 45,
+      "category": "PER SHARE METRICS",
+      "metric": "Basic Earnings / (Loss) Per Share",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency_per_share",
+      "unit_scale": "Units",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": -1.32,
+        "three_months_ended_sept_30_2025": 0.36,
+        "nine_months_ended_sept_30_2026": -0.97,
+        "nine_months_ended_sept_30_2025": 0.48
+      }
+    },
+    {
+      "row_id": 46,
+      "category": "PER SHARE METRICS",
+      "metric": "Diluted Earnings / (Loss) Per Share",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency_per_share",
+      "unit_scale": "Units",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": -1.32,
+        "three_months_ended_sept_30_2025": 0.35,
+        "nine_months_ended_sept_30_2026": -0.97,
+        "nine_months_ended_sept_30_2025": 0.47
+      }
+    },
+    {
+      "row_id": 47,
+      "category": "SUPPLEMENTAL NON-GAAP & OPERATIONAL DATA",
+      "metric": "Adjusted EBITDA (Non-GAAP Measure)",
+      "is_header": false,
+      "is_subtotal": true,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [
+        "[4]"
+      ],
+      "values": {
+        "three_months_ended_sept_30_2026": -32.4,
+        "three_months_ended_sept_30_2025": 118.5,
+        "nine_months_ended_sept_30_2026": 124.6,
+        "nine_months_ended_sept_30_2025": 248.2
+      }
+    },
+    {
+      "row_id": 48,
+      "category": "SUPPLEMENTAL NON-GAAP & OPERATIONAL DATA",
+      "metric": "Operating Cash Flows",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": -41.2,
+        "three_months_ended_sept_30_2025": 84.6,
+        "nine_months_ended_sept_30_2026": 38.4,
+        "nine_months_ended_sept_30_2025": 192.5
+      }
+    },
+    {
+      "row_id": 49,
+      "category": "SUPPLEMENTAL NON-GAAP & OPERATIONAL DATA",
+      "metric": "Capital Expenditures (CapEx)",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": -62.4,
+        "three_months_ended_sept_30_2025": -54.2,
+        "nine_months_ended_sept_30_2026": -178.5,
+        "nine_months_ended_sept_30_2025": -142.1
+      }
+    },
+    {
+      "row_id": 50,
+      "category": "SUPPLEMENTAL NON-GAAP & OPERATIONAL DATA",
+      "metric": "Free Cash Flow (FCF)",
+      "is_header": false,
+      "is_subtotal": true,
+      "unit_type": "currency",
+      "unit_scale": "Millions",
+      "unit_symbol": "$",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": -103.6,
+        "three_months_ended_sept_30_2025": 30.4,
+        "nine_months_ended_sept_30_2026": -140.1,
+        "nine_months_ended_sept_30_2025": 50.4
+      }
+    },
+    {
+      "row_id": 51,
+      "category": "SUPPLEMENTAL NON-GAAP & OPERATIONAL DATA",
+      "metric": "Total Global Full-Time Employees",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "count",
+      "unit_scale": "Units",
+      "unit_symbol": "Employees",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 8420,
+        "three_months_ended_sept_30_2025": 7850,
+        "nine_months_ended_sept_30_2026": 8420,
+        "nine_months_ended_sept_30_2025": 7850
+      }
+    },
+    {
+      "row_id": 52,
+      "category": "SUPPLEMENTAL NON-GAAP & OPERATIONAL DATA",
+      "metric": "Fab Measured Wafer Defect Density",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "density",
+      "unit_scale": "Units",
+      "unit_symbol": "defects / cm2",
+      "footnotes": [
+        "[5]"
+      ],
+      "values": {
+        "three_months_ended_sept_30_2026": 0.51,
+        "three_months_ended_sept_30_2025": 0.28,
+        "nine_months_ended_sept_30_2026": 0.48,
+        "nine_months_ended_sept_30_2025": 0.26
+      }
+    },
+    {
+      "row_id": 53,
+      "category": "SUPPLEMENTAL NON-GAAP & OPERATIONAL DATA",
+      "metric": "R&D Expense as % of Net Revenues (%)",
+      "is_header": false,
+      "is_subtotal": false,
+      "unit_type": "percentage",
+      "unit_scale": "Units",
+      "unit_symbol": "%",
+      "footnotes": [],
+      "values": {
+        "three_months_ended_sept_30_2026": 24.68,
+        "three_months_ended_sept_30_2025": 20.14,
+        "nine_months_ended_sept_30_2026": 22.69,
+        "nine_months_ended_sept_30_2025": 21.53
+      }
+    }
+  ],
+  "footnotes": {
+    "[1]": "Reflects gross wafer shipment billings received from Taiwan Foundry Partners (TFP). Under Article 8.2 of the Amended IP Master Agreement, the contractual royalty rate dropped automatically from 6.25% to 1.80% on August 19, 2026, following the formal certification of consecutive wafer defect densities exceeding 0.42 defects/cm2.",
+    "[2]": "Represents accrual for reimbursable lithography photomask recalibration and fabrication re-tooling obligations disputed under arbitration with TFP and settled on October 2, 2026.",
+    "[3]": "Non-cash write-down associated with the abandoned 800G optical DSP program acquired via the legacy Terabit SAS deal.",
+    "[4]": "Non-GAAP Adjusted EBITDA excludes share-based compensation expense ($18.4M for Q3 2026), asset impairment charges ($85.0M), photomask reserve liabilities ($48.5M), and technology amortization ($18.6M).",
+    "[5]": "Represents aggregate mean defect density measured across silicon-photonic active wafer runs at the Kaohsiung foundry line during the respective trailing production quarters."
+  }
+}

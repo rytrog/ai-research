@@ -1,0 +1,303 @@
+================================================================================
+D-COMP-RAG: DETERMINISTIC COMPILER-GUIDED NEURO-SYMBOLIC RAG
+The Complete Mathematical, Physical, and Architectural Blueprint for Zero-Loss RAG
+================================================================================
+
+1. REALITY CHECK: THE PHYSICS OF "99.999999%" VS. DETERMINISTIC RAG
+--------------------------------------------------------------------------------
+A candid appraisal from first principles of information theory and computational linguistics:
+
+(A) Why 99.999999% End-to-End QA on Raw Unstructured Text is Impossible with Pure Neural Models:
+    Natural language contains non-zero irreducible Shannon entropy:
+        H(X) = - \sum_{x} P(x) \log_2 P(x)
+    Messy OCR scans, human orthographic errors, genuinely ambiguous contractual clauses, 
+    and dense vector collisions on the unit hypersphere S^{d-1} mean any purely neural 
+    pipeline (embeddings + LLM generation) suffers from compounding probabilistic errors.
+    If each stage i operates at 95% accuracy across 4 sequential stages 
+    (chunking -> coreference -> retrieval -> generation):
+        P_total = \prod_{i=1}^4 P_i \approx 0.95^4 \approx 81.45%
+    Current systems hit an invisible ~80%–85% ceiling because they treat structural compilation 
+    problems as probabilistic guessing games.
+
+(B) What CAN and MUST be Made 100.00% Deterministic:
+    While human language semantics cannot be fully stripped of entropy, the entire 
+    Document Compilation, Provenance, Structural Topology, and Symbolic Indexing Layer 
+    CAN and MUST be 100.00% deterministic:
+      - 100% of header-to-cell coordinate integrity
+      - 100% of Roman numeral, list item, and abbreviation boundary protection
+      - 100% bijective byte-offset provenance (zero dropped non-whitespace bytes)
+      - 100% token budget ceiling invariance (strictly <= 512 tokens via Rust BPE)
+      - 100% of explicit cross-reference pointer resolution (O(1) dictionary lookup)
+    Every major failure mode (orphan Roman numerals, severed table headers, hallucinated 
+    conjunctions, silent 512-token truncation, and ungrounded cross-chunk leaps) occurs 
+    because probabilistic models are misapplied to tasks that belong to a deterministic compiler.
+
+
+2. THE MACRO-PATTERN ACROSS ALL 6 SOTA PAPERS (2025–2026)
+--------------------------------------------------------------------------------
+Across all 6 state-of-the-art papers in research_papers/, a single pattern emerges: 
+every paper attempts to repair the damage caused by flat, blind chunking, but almost all 
+resort to throwing massive, high-latency, stochastic LLM calls at the problem.
+
++------------------------+------------------------------------+------------------------------------+---------------------------------------------+
+| Paper & Venue          | Core Mechanism Invented            | Key Quantitative Result            | Fatal Probabilistic / Scaling Flaw          |
++------------------------+------------------------------------+------------------------------------+---------------------------------------------+
+| Jang et al. (ACL 2025) | Rewrites documents via GPT-4o-mini | Cuts pronouns per passage by       | Mutates source text (destroys legal audit   |
+| cross_corefrence.pdf   | d'_i = f_coref(d_i) to replace     | 33–50% (Table 9); boosts Qwen2.5   | provenance), swells token counts, and       |
+|                        | pronouns with explicit nouns.      | SQuAD F1: 0.2972 -> 0.5500.        | requires expensive full-corpus rewriting.   |
++------------------------+------------------------------------+------------------------------------+---------------------------------------------+
+| SAKI-RAG (EMNLP 2025)  | Encodes 2-sentence chunks via 1.3B | Improves Dragonball Multi-Hop IE   | Severe latency & dilution trap:             |
+| 2025.emnlp-main.63.pdf | SentenceVAE, extracts attention    | from 86.75 to 133.46 (Table 4).    | Concatenating chunks dilutes single entity  |
+|                        | weights A_ij, filters with Qwen-max|                                    | vectors (Recall drops on NFCORPUS);         |
+|                        | k_i = s_i \oplus R_i.              |                                    | Qwen-max adds 16.57s–20.44s per query!      |
++------------------------+------------------------------------+------------------------------------+---------------------------------------------+
+| CROSSAUG (May 2026)    | Self-supervised graph corruption   | Boosts HippoRAG2 F1 by +1.33 on    | Requires 1,483 extra 32B-LLM calls, 17.66M  |
+| 2605.28004v1.pdf       | (\rho_e=0.20, \rho_v=0.08) + 2-layer| MuSiQue (41.28) and +1.09 on       | prompt tokens, 5.7h offline indexing on     |
+|                        | Relational GNN, Qwen3-32B check.   | LiteraryQA (33.81) (Table 2).      | LiteraryQA alone, with 18.46% citation error|
++------------------------+------------------------------------+------------------------------------+---------------------------------------------+
+| HiChunk (ACL 2026)     | Fine-tunes Qwen3-4B to predict cut | Improves HiCBench Fact-Cov from    | Relies on fine-tuned 4B LLM suffering from  |
+| Generation with        | points using "residual structure   | 63.20% to 68.12%; Evidence Recall  | "funnel effect" past Level 3; takes         |
+| Hierarchical Chunking  | lines" + Auto-Merge retrieval.     | from 74.06% to 81.03% (Table 3).   | 60.19s per document on GutenQA (Table A3).  |
++------------------------+------------------------------------+------------------------------------+---------------------------------------------+
+| EnSI-RAG (Aug 2026)    | Replaces raw chunks with entity-   | Achieves 100.00% accuracy on Loong | Offline LLM extraction costs 157,031 tokens |
+| 2608.21252v1.pdf       | centered passages + inverted index | financial row-level passages vs.   | and 468.51s (7.8 mins) per query after      |
+|                        | [e][t][c:k=v] -> {psg_id}.         | 91.50% table-level (Table 4).      | amortization (Table 3).                     |
++------------------------+------------------------------------+------------------------------------+---------------------------------------------+
+| EAR (Sep 2026)         | Deterministic rule-based surface   | Cuts retrieved context words by    | Naive fixed 80-word window cuts across      |
+| 2609.12268v1.pdf       | anchors (dates, capitalized tokens)| 37.5–40.2%, latency from 60.6ms    | sentence/clause boundaries and lacks        |
+|                        | retrieving 80-word child windows.  | to 24.4ms with zero LLM calls.     | coreference resolution (p > 0.05 gain).     |
++------------------------+------------------------------------+------------------------------------+---------------------------------------------+
+
+
+3. THE DEEP PHYSICS OF TOKENIZATION, CHUNKING, AND VECTOR POOLING
+--------------------------------------------------------------------------------
+To outperform these six papers deterministically, D-COMP-RAG enforces three physical laws:
+
+(A) Subword Tokenization Non-Linearity (Byte-Pair Encoding Physics):
+    - The Prefix-Space Boundary Law: In Rust tokenizers like Qwen2TokenizerFast (151,643 vocab),
+      BPE merges include leading whitespace (Ġ or ▁). Slicing at an arbitrary character index 
+      without aligning to token boundaries splits " It" into different token IDs than "It", 
+      shifting the initial embedding lookup \vec{e}_i and breaking embedding invariance.
+    - Numeric & Table Shattering: Prose averages ~4 characters per token, but financial tables 
+      with symbols ($, |, %, ., -) fragment into 1–2 characters per token. A 600-character 
+      table row consumes 3x more tokens than a 600-character paragraph. Naive character chunkers 
+      silently overrun the 512-token transformer ceiling and drop columns.
+    - Bijective Byte-Offset Ledger: The chunker must maintain a strict surjective mapping from 
+      UTF-8 byte spans [b_start, b_end) to token indices [t_start, t_end) via return_offsets_mapping=True:
+          \bigcup_{k} [b_start^{(k)}, b_end^{(k)}) = [0, len(D))
+      guaranteeing 100.00% non-whitespace byte preservation.
+
+(B) Mean-Pooling Centroid Drift & Signal Dilution:
+    Let a chunk have N active tokens with final-layer hidden states \vec{h}_1, ..., \vec{h}_N \in \mathbb{R}^d.
+    Mean pooling computes the L2-normalized centroid:
+        \vec{v}_chunk = \frac{\sum_{i=1}^N \vec{h}_i}{\|\sum_{i=1}^N \vec{h}_i\|_2}
+
+    - The Pronoun Vacuum Effect (Jang et al., ACL 2025): If a chunk contains K coreferential 
+      pronouns ("it", "they", "its"), their hidden vectors \vec{h}_pronoun lie near the generic 
+      syntactic origin rather than the domain entity subspace \vec{u}_entity. The cosine similarity 
+      with a query \vec{q} asking about the entity drops proportionally to K / N.
+    - The Concatenation Dilution Law (Why SAKI-RAG Failed on Single-Entity Datasets):
+      In SAKI-RAG, concatenating target sentence s_i with attention-linked sentences R_i produces:
+          \vec{v}_{s_i \oplus R_i} \propto \sum_{t \in s_i} \vec{h}_t + \sum_{t \in R_i} \vec{h}_t
+      When |R_i| >> |s_i|, the vectors from R_i dominate the numerator and pull the centroid 
+      away from s_i, causing the true answer chunk's reranking score to collapse.
+    - The Mathematical Fix: NEVER blindly concatenate whole neighboring chunks into the embedding text.
+      Instead, inject only compact, high-density canonical headers (Breadcrumb + Unit Schema + 
+      Resolved Entity Handle <= 45 tokens) so \vec{u}_entity reinforces the centroid without 
+      diluting the local predicate.
+
+(C) 2D Coordinate & Tree Topology Collapse:
+    A document is a 2D Coordinate Grid (tables where cell c_{r,j} = f(R_r, C_j, U_unit)) 
+    nested inside a Directed Tree (Doc -> Chapter -> Section -> Clause -> List Item).
+    Indexing financial tables at the contiguous row-level with preserved headers/units achieves 
+    100.00% accuracy (EnSI-RAG Table 4) vs. 91.50% when dumping the entire table as one chunk.
+    Packing contiguous row blocks [r : r+k] preserves accounting identities 
+    (Gross Profit - OpEx = Operating Income) while staying strictly under the 512-token ceiling.
+
+
+4. THE 5-STAGE DETERMINISTIC D-COMP-RAG ARCHITECTURE
+--------------------------------------------------------------------------------
+
+[ STAGE 1: DETERMINISTIC GRAMMAR LEXER & RESIDUAL-STATE AST PARSER ]
+  • Replaces: HiChunk's slow 4B-LLM iterative segmentation and naive regex splitters.
+  • Mechanism:
+    - Fixed-Width Lookbehind Boundary Compiler (build_precision_sentence_regex):
+      Protects abbreviations (Dr., Corp., vs., etc.), single-letter initials, Roman numerals 
+      (i.–xx.), numbered lists (1.–99.), and arrow/bullet lookaheads (->, =>, •).
+    - Deterministic Hierarchical State Stack (Zero-Latency AST DFA):
+      Tracks root-to-leaf AST paths ([Doc > Ch 4 > Sec 4.2]) across Markdown headings, 
+      capitalization patterns, and numbered clauses. Every sentence and table row 
+      automatically inherits its exact AST context path with zero "hierarchical drift."
+
+[ STAGE 2: DETERMINISTIC CENTERING STACK + LOCAL NEURAL MARGIN GATE ]
+  • Replaces: Destructive GPT-4o-mini rewriting (Jang et al.) and unconstrained cosine guessing.
+  • Mechanism:
+    - Surface Anchor Extraction via EAR normalization + ENT_PROPER_PERSON_OR_ORG.
+    - 5-Tier Scope Stack:
+        Tier 1: Global Document Registry (Preambles, definitions active across all chunks).
+        Tier 2: Hierarchical AST Scope (Section Governors active across section chunks).
+        Tier 3: Discourse Focus Stack (Push/pop for side notes/tables + resumption markers).
+        Tier 4: Typed Backward Anchors ("such agreement", "the aforementioned diode").
+        Tier 5: Canonical Citation Symbol Table (O(1) dictionary lookups for explicit cross-refs).
+    - Strict Morphosyntactic Agreement Filter (Deterministic Pre-Filter):
+        "It" / "Its"   -> Filter stack strictly to Singular + Inanimate/Corporate (ORG, PRODUCT).
+        "He" / "She"   -> Filter stack strictly to Singular + Animate (PERSON).
+        "They" / "Their" -> Filter stack strictly to Plural OR Collective ORG.
+        "This [Noun]"  -> Filter by lexical head-noun/hypernym match against preceding predicates.
+    - Hybrid Deterministic-Neural Tie-Breaker:
+        If 2+ candidates survive, score via local Qwen3-Embedding-0.6B Cloze + Predicate scorer 
+        gated by MIN_CONFIDENCE_THRESHOLD = 0.52 and MIN_MARGIN_THRESHOLD = 0.05.
+    - Non-Destructive Asymmetric Tagging:
+        Inject [Resolved Subject: 'It' -> Meridian Vault IP Holdings LLC] into chunk header.
+        Raw text remains 100% bit-for-bit untouched (provenance preserved).
+
+[ STAGE 3: CANONICAL DUAL-VIEW TABLE & PROPOSITION PACKER ]
+  • Replaces: Naive table slicing and EnSI-RAG's 468-second LLM table extraction.
+  • Mechanism:
+    - Unit Multiplier Banner Extraction: Extracts unit schemas ("$ USD Millions") deterministically 
+      from pre-table lead-ins.
+    - Contiguous Row Block Packing: Packs contiguous rows [r : r+k] dynamically into chunks 
+      under a strict <= 512 token ceiling.
+    - Dual-View Representation:
+        View 1: Clean Markdown Grid with replicated column headers + alignment row.
+        View 2: Linearized compact cell propositions (Metric: Col1=Val1, Col2=Val2).
+
+[ STAGE 4: DETERMINISTIC ENTITY-STRUCTURE HANDLE INDEX & BIPARTITE GRAPH ]
+  • Replaces: CROSSAUG's 5.7h GNN+LLM completion and EnSI-RAG's LLM tuple extractor.
+  • Mechanism:
+    - Emits deterministic index handles matching EnSI-RAG's formal schema:
+          [e][t][c : k = v] -> {chunk_id}
+      where c \in {property, relation, aspect}.
+    - Tables: [Helios Semiconductor][ORG][property : Operating Income (Q3 2026) = -$158.20M] -> {chunk_5}
+    - Prose:  [Meridian Vault IP Holdings LLC][ORG][relation : licensed = Kronos-7] -> {chunk_10}
+    - Cites:  [Section 4.2][CLAUSE][relation : cites = Section 4.1] -> {chunk_12, chunk_8}
+    - In-Memory Bipartite Graph G = (V_entities \cup V_chunks, E):
+      Enables O(1) cross-chunk linking without any LLM indexing calls or hallucinated edges.
+
+[ STAGE 5: DETERMINISTIC DUAL-AXIS RETRIEVAL & AUTO-MERGE ]
+  • Replaces: SAKI-RAG's 20-second Qwen-max dynamic filter while implementing HiChunk's Auto-Merge.
+  • Mechanism at Query Time (<15 ms):
+    - Dual-Axis Candidate Retrieval: Dense cosine search (Qwen3-Embedding-0.6B) in parallel 
+      with deterministic EAR/EnSI Anchor Handle Lookup ([e][t][k] exact match bonus).
+    - Deterministic Graph Bridge Expansion: If retrieved chunk contains an explicit cross-ref pointer 
+      (Section 4.1, Footnote 3), deterministically fetch target symbol's chunk from AST Symbol Table.
+    - HiChunk Deterministic Auto-Merge (Cond_1 + Cond_2 + Cond_3):
+      Traverse retrieved chunks in rank order and deterministically merge sibling chunks upward 
+      into their AST parent section p whenever:
+        (1) Coherence (Cond_1):
+            |\mathcal{N} \cap children(p)| >= 2
+            (At least two sub-chunks from the same section are retrieved).
+        (2) Substantiality (Cond_2):
+            \sum_{n \in \mathcal{N} \cap children(p)} len(n) >= \theta^*(T_used, p) \cdot len(p)
+            where \theta^*(T_used, p) = (1/3) * (1 + T_used / T_max).
+        (3) Feasibility (Cond_3):
+            T_used + len(p) <= T_max.
+
+
+
+6. THE CONJUNCTIVE EVIDENCE DISCONNECTION PROBLEM & PROOF-CARRYING CHUNKING (PCC)
+--------------------------------------------------------------------------------
+(A) The Survival vs. Semantic Entanglement Paradox:
+    "Information survives, but its meaning gets disconnected."
+    Standard chunking benchmarks commit a fatal category error: they evaluate 
+    syntactic preservation (character/token recall) and single-hop semantic similarity.
+    However, 100% of words can survive while 100% of the conjunctive truth conditions 
+    are destroyed!
+
+    Consider a 100-page enterprise financial filing:
+      - PAGE 1  (Fact A)     : "The company's operating income was 12.4."
+      - PAGE 2  (Banner B)   : "The figures in this table are expressed in millions of USD."
+      - PAGE 7  (Clause C)   : "The figures exclude discontinued operations."
+      - PAGE 12 (Footnote D) : "The reported figures were later restated under a revised accounting policy."
+
+    When split across separate chunks:
+      - Zero words have been deleted.
+      - Yet Chunk 1 alone is a semantic trap:
+        * Is it $12.40 or $12,400,000? (Unit disconnect)
+        * Does it include discontinued operations? (Scope/exclusion disconnect)
+        * Is it valid or superseded? (Temporal restatement disconnect)
+    An LLM retrieving Chunk 1 will generate answers with high confidence that are 
+    grossly incorrect, legally hazardous, or economically catastrophic.
+
+(B) The 5 Archetypes of Conjunctive Relationships Lost Across Pages:
+    1. Scale & Dimensionality Grounding:
+       Value v on Page p_1 <---> Unit multiplier / currency banner on Page p_2.
+       (e.g., "12.4" vs. "$ USD Millions").
+    2. Scope Conditions & Exclusion Grounding:
+       Assertion on Page p_1 <---> Negative qualifier / exception clause on Page p_7.
+       (e.g., "All operations" vs. "Excluding discontinued fabrication units").
+    3. Temporal Supersession & Lifecycle Grounding:
+       Historical figure on Page p_1 <---> Restatement / amendment on Page p_12.
+       (e.g., Reported vs. Restated under ASC 606).
+    4. Statutory & Structural Citation Grounding:
+       Enforcement clause on Page p_15 <---> Definitional threshold on Page p_4.
+       (e.g., "Threshold defined in Section 4.1 was breached").
+    5. Nomenclature & Global Definitional Grounding:
+       Entity handle on Page p_28 <---> Preamble party definition on Page p_1.
+       (e.g., "The Company" vs. "Meridian Vault IP Holdings LLC").
+
+(C) The Mathematical Formulation of Conjunctive Grounding:
+    In formal semantics, an atomic factual claim \phi is not unconditionally true in isolation.
+    Its truth value is a conjunction over its governing evidence conjuncts:
+        \Phi = \phi_{fact} \land Q_{unit} \land Q_{scope} \land Q_{temporal} \land Q_{def}
+    When document D is partitioned into chunks C = {c_1, ..., c_M}:
+    Standard RAG evaluates:
+        \mathbb{E}[Answer \mid q, c_1]
+    whereas ground truth requires:
+        \mathbb{E}[Answer \mid q, \bigwedge_{j} Q_j]
+    When \exists j such that Q_j \notin c_1, the retrieved chunk induces a biased prior:
+        \mathbb{E}[Answer \mid q, c_1] \neq \mathbb{E}[Answer \mid q, \Phi]
+
+(D) The Solution: Proof-Carrying Chunking (PCC-RAG):
+    Drawing on Proof-Carrying Code (Necula & Lee, 1996), a chunk is NOT merely a bag of text.
+    Every chunk is compiled as a certified tuple:
+        c_i = < T_i, \Pi_i >
+    where T_i is the bit-for-bit unmutated source text, and \Pi_i is a Machine-Verifiable 
+    Proof Certificate of Conjunctive Grounding:
+        \Pi_i = < AST_Path, \Pi_{unit}, \Pi_{scope}, \Pi_{temporal}, \Pi_{entities} >
+
+    - \Pi_{unit}: Deterministic byte-span pointer to governing unit schema (Page 2).
+    - \Pi_{scope}: Deterministic pointers to active exclusion clauses (Page 7).
+    - \Pi_{temporal}: Deterministic flags indicating restatement/supersession (Page 12).
+    - \Pi_{entities}: Resolved entity bindings to the Global Document Registry (Page 1).
+
+(E) Machine-Verifiable Conjunctive Auditing:
+    Instead of brittle substring checks, the PCC Verifier executes an algorithmic audit:
+        IsEveryFactGrounded(c_i) == True
+    If an atomic numerical or predicate fact in c_i has ungrounded units or dangling 
+    cross-page conditions, the compiler binds the proof certificate pointers into 
+    the chunk's canonical header:
+        [PROOF-CERTIFICATE: Unit=$ USD Millions (p.2) | Scope=Excl Discontinued (p.7) | Status=Restated (p.12)]
+    This guarantees that whenever c_i is retrieved, the LLM receives the full conjunctive 
+    evidence required for truthful interpretation, without needing to merge 100 pages of context!
+
+
+7. RESEARCH PAPER BLUEPRINT FOR PUBLICATION
+--------------------------------------------------------------------------------
+• Proposed Title:
+  "Proof-Carrying Chunking: Deterministic AST Topology, Asymmetric Coreference Tagging, 
+   and Conjunctive Evidence Grounding for Zero-Loss RAG"
+
+• Core Thesis:
+  The 15%–20% failure ceiling in state-of-the-art RAG (SAKI-RAG, CROSSAUG, EnSI-RAG, HiChunk, 
+  Jang et al.) stems from two compounding flaws:
+    1. Misapplying probabilistic LLM prompts to structural compilation tasks (sentence slicing, 
+       coreference rewriting, table extraction, graph linking) that can be solved deterministically.
+    2. The Conjunctive Evidence Disconnection Problem: standard chunkers preserve text syntax 
+       while severing the cross-page conjunctive truth conditions (units, scope exclusions, 
+       restatements) required to interpret facts correctly.
+
+• 4-Way Comparative Ablation Benchmark:
+  1. Baseline 1 (Naive Fixed / Recursive Chunking):
+     Demonstrates header severing, pronoun information vacuum, and list shattering.
+  2. Baseline 2 (EAR Deterministic Surface Windows, Bora et al. 2026):
+     Fast offline indexing, but fails on cross-chunk pronouns and multi-row table derivations.
+  3. Baseline 3 (LLM Coreference Rewriting, Jang et al. ACL 2025):
+     Improves mean-pooling recall, but mutates source text, bloats tokens, and shatters financial tables.
+  4. Ours (D-COMP-RAG / Proof-Carrying Chunking):
+     100.0% byte-offset provenance, 100.0% token budget invariance (<= 512 tokens), 
+     zero LLM indexing calls, and superior Recall@k, Precision@k, and Information Efficiency 
+     (IE@k = Recall@k * Precision@k from SAKI-RAG Eq. 8).
+================================================================================
+
+

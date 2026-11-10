@@ -1,0 +1,183 @@
+Researcher Audit: 3 Hidden Flaws Still in This Code (Your Paper Opportunity!)
+Even though this script hits 5/5 (100%) on our sample chapter, a top peer reviewer will test where it breaks on 10,000-page benchmarks like MuSiQue, FinanceBench, and RGB. Right now, three parts of neural_multilingual_chunker.py are still simplified heuristics:
+
+Flaw 1 — Regex Entity & Pronoun Guessing (Lines 245 & 504): Right now, _extract_entities() uses a regex (ENTITY_RE) that only catches English capitalized suffixes (Corp., LLC, Hospital), and line 504 assumes "It" always refers to the very last entity (last_subject = ents[-1]). On multilingual text or sentences with multiple entities, regex fails—but once Qwen3-Embedding-0.6B is loaded, we can replace that regex heuristic by scoring which prior entity has the highest neural cosine similarity to the predicate following "It"!
+
+Flaw 2 — Broken Cross-Section Pointers (Look at Chunk #6): Chunk #6 says "the two-lot threshold defined in Section 4.1 was formally breached". If a user only retrieves Chunk #6, they still don't know that the two-lot threshold in Section 4.1 was 0.42 defects/cm2 and drops the royalty to 1.80%! We can add a Cross-Chunk Reference Linker that detects phrases like "defined in Section X.Y" or "Footnote N" and automatically binds the referenced rule into the chunk's metadata.
+
+Flaw 3 — Table Budget Hardcode (Line 432): In _serialize_table_with_row_propositions(), rows are grouped purely by token count (table_budget = 260), rather than grouping related financial rows (like Revenue + Net Royalty Income) by semantic similarity.
+
+
+
+
+
+
+failing points in rag :-
+================================================================================
+RAG CHUNK-MAKING PIPELINE AUDIT: PROBLEMS & ARCHITECTURAL SOLUTIONS
+(Ordered in Ascending Operational Sequence: Document Ingestion -> Indexing)
+================================================================================
+
+EXECUTIVE FILTERING SUMMARY:
+Not all 15 RAG failure modes originate in chunking, but 12 of them CAN and MUST
+be addressed or proactively immunized during the Chunk-Making & Construction Stage.
+Below, every problem is mapped to the exact chronological step in the chunking
+engine that faces it, why naive chunking fails, and the precise architectural fix.
+
+--------------------------------------------------------------------------------
+STEP 1: MULTI-PAGE & RAW DOCUMENT LAYOUT PARSING (Input / Extraction Layer)
+--------------------------------------------------------------------------------
+[Pipeline Step]: Raw PDF / HTML / Markdown Layout Extraction before splitting text.
+
+• Problem 1.1: Figure, Footnote, and Cross-Page Context Loss (Failure Mode #5)
+  - What happens: A footnote defining measurement periods sits at the bottom of Page 4,
+    or a figure explanation is separated from the chart coordinates on Page 5.
+  - Why naive chunking fails: Blind text stream extractors dump footnotes at the end
+    of the page or document, decoupling them from the sentence that referenced them.
+  - Chunk-Engine Fix: Implement Layout-Aware AST Extraction. Detect footnote markers
+    (e.g., "[14]", "Footnote 14") and in-line their content or attach them as linked
+    metadata attributes directly to the parent paragraph chunk.
+
+• Problem 1.2: Code, Schema & Structured-Data Syntax Fragmentation (Failure Mode #9)
+  - What happens: A code function is sliced mid-declaration, dropping imports,
+    decorators, or enclosing classes. A JSON/YAML record loses its parent keys.
+  - Why naive chunking fails: Line/token-based splitters treat braces, indentation,
+    and class scopes as plain characters.
+  - Chunk-Engine Fix: AST-Tree Slicing (e.g., tree-sitter). Never partition across
+    function or object declaration boundaries; attach top-level imports and class
+    signatures to all inner method chunks.
+
+--------------------------------------------------------------------------------
+STEP 2: DOCUMENT STRUCTURE & HEADING HIERARCHY PARSING (AST Block Layer)
+--------------------------------------------------------------------------------
+[Pipeline Step]: Walking the document tree and establishing semantic containment.
+
+• Problem 2.1: The Orphaned Heading & Category Loss Problem (Failure Mode #2)
+  - What happens: Chunk has "The fee is ₹12,000 per semester", but the heading
+    "Hostel accommodation fees for international students" was left in Chunk N-1.
+  - Why naive chunking fails: Fixed windows treat headings as ordinary text lines
+    and split immediately after them when token budgets run out.
+  - Chunk-Engine Fix: Contextual Breadcrumb Injection. Traverse header depths (H1 > H2 > H3)
+    and prepend an immutable structural prefix to every child chunk:
+    `[CONTEXT | Path: Fees > Hostel > International Students]`.
+
+• Problem 2.2: List and Nested Hierarchy Destruction (Failure Mode #3)
+  - What happens: Shared qualifiers (e.g., "All applicants below require Income Cert:
+    - Scholarship A, - Scholarship B") are severed from their list items.
+  - Why naive chunking fails: Treats bullets as isolated standalone items.
+  - Chunk-Engine Fix: Parent Qualifier Inheritance. Group lists atomically; if a list
+    must be split due to size, replicate the root qualifier and list header onto
+    every subsequent sub-list chunk.
+
+--------------------------------------------------------------------------------
+STEP 3: TABULAR DATA & NUMERICAL MATRIX PROCESSING (Structured Data Layer)
+--------------------------------------------------------------------------------
+[Pipeline Step]: Processing ASCII/Markdown/HTML tables, financial schedules, and matrices.
+
+• Problem 3.1: Table Header Decapitation & Cell Disassociation (Failure Mode #4)
+  - What happens: Slicing a 30-row financial statement produces chunks containing:
+    `| Photomask Liability | $0.00 | $19.20 | $48.50 |` without column dates or units.
+  - Why naive chunking fails: Token splitters cut tables across arbitrary character boundaries.
+  - Chunk-Engine Fix: Dual Tabular + Row Proposition Serialization:
+    1. Re-bind Column Headers + Unit Scale to every physical table sub-chunk.
+    2. Append explicit natural language row-propositions:
+       `• Photomask Liability: Q1 2026=$0.00M; Q2 2026=$19.20M; Q3 2026=$48.50M.`
+
+--------------------------------------------------------------------------------
+STEP 4: SEMANTIC BOUNDARY PARTITIONING & SENTENCE GROUPING (Segmentation Layer)
+--------------------------------------------------------------------------------
+[Pipeline Step]: Deciding exact split points between contiguous sentences/paragraphs.
+
+• Problem 4.1: Semantic Boundary Fracture & Mid-Sentence Cuts (Failure Mode #1)
+  - What happens: A rule sentence is sliced in half, or separated from its explanation.
+  - Why naive chunking fails: Slicing at token N cuts mid-word or mid-sentence.
+  - Chunk-Engine Fix: Dynamic Programming Sentence Segmentation. Use exact subword
+    token boundaries with an integral sentence matrix to find the globally optimal
+    cut points that maximize intra-chunk semantic coherence within [min_tok, max_tok].
+
+• Problem 4.2: The Illusion of Character/Token Overlap (Failure Mode #8)
+  - What happens: 20-token overlapping text duplicates sentences, diluting search scores
+    and consuming 30% of top-k retrieval capacity with duplicate matches.
+  - Why naive chunking fails: Overlap is an open-loop bandage that cannot reconnect
+    distant logic or tables.
+  - Chunk-Engine Fix: Semantic Envelope Links. Replace raw text duplication with
+    structured neighbor pointers (`prev_chunk_id`, `next_chunk_id`) and sliding
+    context windows retrieved only on demand.
+
+--------------------------------------------------------------------------------
+STEP 5: LOGICAL SCOPE, NEGATION & DISCOURSE PROTECTION (Entailment Layer)
+--------------------------------------------------------------------------------
+[Pipeline Step]: Enforcing rule-exception integrity and conditional logic.
+
+• Problem 5.1: Lost Negation, Condition, Temporal Scope & Severed Exceptions (Failure Mode #10)
+  - What happens: "Dexamethasone is administered 4.0 mg" is in Chunk A;
+    "Strictly contraindicated in diabetics with HbA1c > 8.2%" is in Chunk B.
+    Retrieving Chunk A alone causes a fatal medical hallucination.
+  - Why naive chunking fails: Ignores logical dependence between rules and their exceptions.
+  - Chunk-Engine Fix: Discourse & Contraindication Hard-Binding. The DP segmentation
+    penalizes any split immediately preceding conditional/exception conjunctions
+    ("However", "Unless", "Contraindicated", "Except"), forcing rule + exception into the same chunk.
+
+--------------------------------------------------------------------------------
+STEP 6: CROSS-CHUNK RELATIONAL LINKING & GRAPH EXPANSION (Relational Layer)
+--------------------------------------------------------------------------------
+[Pipeline Step]: Connecting non-contiguous chunks that reference each other.
+
+• Problem 6.1: Missing Cross-Chunk Dependencies & Distant Pointers (Failure Mode #6)
+  - What happens: Chunk 6 says "the two-lot threshold defined in Section 4.1 was breached".
+    The reader/LLM has no access to the 0.42 defect rate defined 3 pages earlier.
+  - Why naive chunking fails: Chunks are treated as independent islands.
+  - Chunk-Engine Fix: Cross-Section Entity & Citation Linker. Regex/neural scan for
+    statutory references ("Section X.Y", "Article N", "Footnote M") and automatically
+    inject the target's summary definition into the chunk's contextual metadata header.
+
+• Problem 6.2: Multi-Hop Evidence Scattering Across Sections (Failure Mode #12)
+  - What happens: A multi-hop query requires connecting legal owner (Section 4.1),
+    royalty rate (Section 4.1), and breach date (Section 4.2).
+  - Why naive chunking fails: Single chunks only contain 1 hop of the evidence chain.
+  - Chunk-Engine Fix: Entity Relation Triplet Extraction. Extract (Subject -> Predicate -> Object)
+    triples and attach them to chunks, enabling multi-hop graph expansion during retrieval.
+
+--------------------------------------------------------------------------------
+STEP 7: DUAL SIZING & DENSE RETRIEVAL ARCHITECTURE (Index Representation Layer)
+--------------------------------------------------------------------------------
+[Pipeline Step]: Preparing the chunk representation for embedding models and vector DBs.
+
+• Problem 7.1: The Chunk-Size Dilemma: Dilution vs. Context Starvation (Failure Mode #7)
+  - What happens: 500-token chunks dilute vector embeddings; 50-token micro-chunks lack context.
+  - Why naive chunking fails: Uses a single fixed chunk size for both retrieval and generation.
+  - Chunk-Engine Fix: Hierarchical Parent-Child Indexing.
+    - Child Chunk (Micro: 50-80 tokens): Single atomic claim used strictly for dense search scoring.
+    - Parent Chunk (Macro: 250-400 tokens): Surrounding semantic paragraph sent to the LLM.
+
+• Problem 7.2: Vocabulary Mismatch & Semantic Distance (Failure Mode #11)
+  - What happens: Document says "economically weaker applicants"; user asks "poor students".
+  - Why naive chunking fails: Lexical search (BM25) fails on synonyms; weak dense models fail on domain jargon.
+  - Chunk-Engine Fix: Synthetic Proposition & Alias Injection. Generate domain-specific
+    synonyms, acronym expansions, and normalized units ($3.85B -> $3850M) directly into chunk indexable text.
+
+--------------------------------------------------------------------------------
+STEP 8: PROVENANCE, TEMPORAL VALIDITY & NOISE PRUNING (Metadata & Hygiene Layer)
+--------------------------------------------------------------------------------
+[Pipeline Step]: Final metadata tagging and noise control before committing to vector index.
+
+• Problem 8.1: Stale, Conflicting, or Superseded Versions (Failure Mode #14)
+  - What happens: Document contains original GAAP figures in Q2 and Restated figures in Q3.
+    Retrieval pulls the outdated Q2 numbers.
+  - Why naive chunking fails: Chunks lack temporal and authority timestamps.
+  - Chunk-Engine Fix: Provenance & Validity Tagging. Attach `effective_date`, `supersedes_version`,
+    and `is_restated=True` flags in chunk metadata to filter out stale data.
+
+• Problem 8.2: Distractor Noise & Context Clutter Causing "Lost-in-the-Middle" (Failure Modes #13 & #15)
+  - What happens: Chunks with verbose conversational fluff bury the core factual needle,
+    causing the LLM to overlook evidence in long context windows.
+  - Why naive chunking fails: Ingests boilerplate text, legal disclaimers, and page headers indiscriminately.
+  - Chunk-Engine Fix: Content De-noising & Propositional Density Maximization.
+    Strip repetitive page headers/footers, compress whitespace, and ensure >85% of tokens
+    in the chunk carry verifiable factual entropy.
+
+================================================================================
+NON-CHUNKING FAILURES (Pure Retrieval / Generation Runtime - Out of Chunk Scope):
+- User Prompt Ambiguity (Requires query transformation / HyDE)
+- Model Temperature / Hallucination in Generation (Requires NLI entailment gate)
+================================================================================

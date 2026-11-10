@@ -1,0 +1,10 @@
+{
+  "timestamp": "2026-11-09T17:14:20Z",
+  "architecture": "PCC-Tensor 3.1 (CTIR L0-L4)",
+  "ingestion_latency_ms": 38.41,
+  "average_query_latency_ms": 1.012,
+  "total_queries": 8,
+  "exact_value_accuracy_pct": 100.0,
+  "footnote_linkage_pct": 100.0,
+  "validation_status": "PASS"
+}
