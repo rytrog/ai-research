@@ -450,18 +450,26 @@ class CTIRValidator:
 
     @classmethod
     def verify_c20_gate_authority(cls, snapshot: CTIRSnapshot) -> List[ValidationDiagnostic]:
-        """Contract C20: Source facts cannot be prematurely promoted to PASS before formal validation."""
+        """Contract C20: Source facts and derived facts cannot be prematurely promoted to PASS before formal validation."""
         diags: List[ValidationDiagnostic] = []
         # If snapshot has validation_report is None, any facts marked PASS violate gate authority
         if snapshot.validation_report is None:
-            premature = [f.fact_id for f in snapshot.source_facts.values() if f.verification_state == ValidationStatus.PASS]
-            if premature:
-                diags.append(ValidationDiagnostic(
-                    code="VALIDATION_PREMATURE_PROMOTION",
-                    target_id=premature[0],
-                    severity="ERROR",
-                    message=f"Contract C20 violation: Facts {premature[:3]} prematurely promoted to PASS before validator pass.",
-                ))
+            for fid, f in snapshot.source_facts.items():
+                if f.verification_state == ValidationStatus.PASS:
+                    diags.append(ValidationDiagnostic(
+                        code="VALIDATION_PREMATURE_PROMOTION",
+                        target_id=fid,
+                        severity="ERROR",
+                        message=f"Contract C20 violation: Source fact '{fid}' prematurely promoted to PASS before validator pass.",
+                    ))
+            for dfid, df in snapshot.derived_facts.items():
+                if df.verification_state == ValidationStatus.PASS:
+                    diags.append(ValidationDiagnostic(
+                        code="VALIDATION_PREMATURE_PROMOTION",
+                        target_id=dfid,
+                        severity="ERROR",
+                        message=f"Contract C20 violation: Derived fact '{dfid}' prematurely promoted to PASS before validator pass.",
+                    ))
         return diags
 
     # ==========================================================================
@@ -507,6 +515,21 @@ class CTIRValidator:
         v7_diags = cls.verify_c13_provenance_closure(snapshot)
         v8_diags = cls.verify_c14_fact_lineage(snapshot)
 
+        # Stage 9: Serialization Verification (Contract C15)
+        v9_diags: List[ValidationDiagnostic] = []
+        try:
+            from ..storage.serialize import serialize_ctir_to_json
+            _ = serialize_ctir_to_json(snapshot)
+            ser_status = ValidationStatus.PASS
+        except Exception as e:
+            ser_status = ValidationStatus.FAIL
+            v9_diags.append(ValidationDiagnostic(
+                code="SERIALIZATION_FAILURE",
+                target_id=snapshot.snapshot_id,
+                severity="ERROR",
+                message=f"Contract C15 failure: Serialization failed with {e}",
+            ))
+
         def _compute_status(diags: List[ValidationDiagnostic]) -> ValidationStatus:
             if any(d.severity == "ERROR" for d in diags):
                 return ValidationStatus.FAIL
@@ -514,7 +537,7 @@ class CTIRValidator:
                 return ValidationStatus.UNRESOLVED
             return ValidationStatus.PASS
 
-        all_diags.extend(v1_diags + v2_diags + v3_diags + v4_diags + v5_diags + v6_diags + v7_diags + v8_diags)
+        all_diags.extend(v1_diags + v2_diags + v3_diags + v4_diags + v5_diags + v6_diags + v7_diags + v8_diags + v9_diags)
 
         report = ValidationReport(
             schema_status=_compute_status(v1_diags),
@@ -525,7 +548,7 @@ class CTIRValidator:
             relationships_status=_compute_status(v6_diags),
             provenance_status=_compute_status(v7_diags),
             lineage_status=_compute_status(v8_diags),
-            serialization_status=ValidationStatus.PASS,
+            serialization_status=ser_status,
             diagnostics=tuple(all_diags),
         )
 

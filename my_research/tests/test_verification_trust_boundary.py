@@ -164,20 +164,19 @@ def test_t03_premature_derived_pass_rejected(base_doc, valid_fact_bundle):
 # ==============================================================================
 # T04: Three-state preservation: UNRESOLVED must never become FAIL or PASS
 # ==============================================================================
-def test_t04_three_state_preservation(base_doc, valid_fact_bundle):
+def test_t04_three_state_preservation(base_doc):
     """
-    T04: An UNRESOLVED snapshot must leave facts as UNRESOLVED, not convert them to FAIL.
+    T04: An UNRESOLVED snapshot must leave facts as UNRESOLVED, not convert them to FAIL or PASS.
     """
-    coord = FactCoordinates("e0", "Corp", "m0", "Rev", (), ("2026",), None)  # Missing temporal -> UNRESOLVED
-    unit = UnitAssertion(currency="USD", scale_exponent=0)
+    from my_research.src.model.structural import LogicalRow, LogicalColumn
 
-    # Fact with missing temporal coordinate triggers a WARNING diagnostic -> UNRESOLVED report
-    fact_unres = SourceFact(
-        "f_unres", "c1", coord, ExactNumeric("100.00", Decimal("100.00")), unit, "100.00",
-        valid_fact_bundle, ValidationStatus.UNRESOLVED
-    )
-    c1 = CellNode("c1", CellRole.DATA, GridSpan(0, 1, 0, 1), "100.00", None, SourceRef(base_doc.sha256, "0", "0", "c1"))
-    frag = TableFragment("frag_1", "p0", 1, 1, cells=(c1,))
+    r0 = LogicalRow("ROW_000", 0, None, "DETAIL", "Revenue", 0, ())
+    col0 = LogicalColumn("COL_00", 0, ("Line Item",), role="ROW_HEADER")
+    col1 = LogicalColumn("COL_01", 1, ("Undated Header",))  # No temporal declaration -> temporal is None -> WARNING
+
+    c_stub = CellNode("c_stub", CellRole.ROW_HEADER, GridSpan(0, 1, 0, 1), "Revenue", None, SourceRef(base_doc.sha256, "0", "0", "c_stub"))
+    c1 = CellNode("c1", CellRole.DATA, GridSpan(0, 1, 1, 2), "100.00", None, SourceRef(base_doc.sha256, "0", "0", "c1"))
+    frag = TableFragment("frag_1", "p0", 1, 2, cells=(c_stub, c1), rows=(r0,), columns=(col0, col1))
 
     compiler = TableCompiler()
     snapshot = compiler.compile(
@@ -193,7 +192,8 @@ def test_t04_three_state_preservation(base_doc, valid_fact_bundle):
     assert snapshot.validation_report.overall_status == ValidationStatus.UNRESOLVED, (
         f"Expected UNRESOLVED report for missing temporal, got {snapshot.validation_report.overall_status}"
     )
-    fact = snapshot.source_facts.get("f_unres") or next(iter(snapshot.source_facts.values()))
+    assert len(snapshot.source_facts) > 0, "Compiler produced 0 source facts!"
+    fact = next(iter(snapshot.source_facts.values()))
     assert fact.verification_state == ValidationStatus.UNRESOLVED, (
         f"Three-state violation: UNRESOLVED status was coerced to {fact.verification_state}!"
     )
@@ -262,3 +262,4 @@ def test_t06_unverified_fact_retrieval_rejected(base_doc, valid_fact_bundle):
     assert len(results) == 0, (
         f"Retrieval trust boundary breached! Query engine returned UNRESOLVED fact as verified answer: {results}"
     )
+

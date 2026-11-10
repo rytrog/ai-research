@@ -368,7 +368,7 @@ class TableCompiler:
                         unit=ocf_fact.unit,
                         canonical_display=f"{ocf_fact.unit.currency or 'USD'} {fcf_canonical:,.2f}",
                         execution_engine="DECIMAL_KERNEL",
-                        verification_state=ValidationStatus.PASS,
+                        verification_state=ValidationStatus.UNRESOLVED,
                     )
                     derived_facts[fcf_id] = derived_fact
 
@@ -393,8 +393,8 @@ class TableCompiler:
         # 8. Validate Snapshot via CTIRValidator
         validation_report = CTIRValidator.validate_snapshot(snapshot)
 
-        # 9. Elevate source fact verification status based on validation report
-        target_state = ValidationStatus.PASS if validation_report.overall_status == ValidationStatus.PASS else ValidationStatus.FAIL
+        # 9. Elevate fact verification status based on validation report (preserving three-state logic)
+        target_state = validation_report.overall_status
         final_facts: Dict[str, SourceFact] = {}
         for fid, fact in source_facts.items():
             final_facts[fid] = SourceFact(
@@ -408,6 +408,19 @@ class TableCompiler:
                 verification_state=target_state,
                 transformations=fact.transformations,
                 certificate=fact.certificate,
+            )
+
+        final_derived: Dict[str, DerivedFact] = {}
+        for dfid, df in derived_facts.items():
+            final_derived[dfid] = DerivedFact(
+                fact_id=df.fact_id,
+                expression_name=df.expression_name,
+                input_fact_ids=df.input_fact_ids,
+                result_value=df.result_value,
+                unit=df.unit,
+                canonical_display=df.canonical_display,
+                execution_engine=df.execution_engine,
+                verification_state=target_state,
             )
 
         # Return final snapshot with validated facts and validation report attached
@@ -424,7 +437,7 @@ class TableCompiler:
             headers=snapshot.headers,
             typed_values=snapshot.typed_values,
             source_facts=final_facts,
-            derived_facts=derived_facts,
+            derived_facts=final_derived,
             evidence_anchors=snapshot.evidence_anchors,
             validation_report=validation_report,
         )

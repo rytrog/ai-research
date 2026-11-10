@@ -35,15 +35,15 @@ class ValidationDiagnostic:
 
 @dataclass(frozen=True)
 class ValidationReport:
-    schema_status: ValidationStatus = ValidationStatus.PASS
-    source_status: ValidationStatus = ValidationStatus.PASS
-    geometry_status: ValidationStatus = ValidationStatus.PASS
-    structure_status: ValidationStatus = ValidationStatus.PASS
-    semantics_status: ValidationStatus = ValidationStatus.PASS
-    relationships_status: ValidationStatus = ValidationStatus.PASS
-    provenance_status: ValidationStatus = ValidationStatus.PASS
-    lineage_status: ValidationStatus = ValidationStatus.PASS
-    serialization_status: ValidationStatus = ValidationStatus.PASS
+    schema_status: ValidationStatus = ValidationStatus.UNRESOLVED
+    source_status: ValidationStatus = ValidationStatus.UNRESOLVED
+    geometry_status: ValidationStatus = ValidationStatus.UNRESOLVED
+    structure_status: ValidationStatus = ValidationStatus.UNRESOLVED
+    semantics_status: ValidationStatus = ValidationStatus.UNRESOLVED
+    relationships_status: ValidationStatus = ValidationStatus.UNRESOLVED
+    provenance_status: ValidationStatus = ValidationStatus.UNRESOLVED
+    lineage_status: ValidationStatus = ValidationStatus.UNRESOLVED
+    serialization_status: ValidationStatus = ValidationStatus.UNRESOLVED
     diagnostics: Tuple[ValidationDiagnostic, ...] = field(default_factory=tuple)
 
     @property
