@@ -12,7 +12,7 @@ from decimal import Decimal
 from typing import Dict, List, Optional, Tuple
 
 from ..compiler.scope_resolver import ScopeResolver
-from ..model.ctir import CTIRSnapshot, SourceFact
+from ..model.ctir import CTIRSnapshot, SourceFact, ValidationStatus
 from ..model.graph import FootnoteNode
 from ..model.temporal import DurationPeriod, InstantPeriod, TemporalCoordinate
 
@@ -37,7 +37,16 @@ class CTIRQueryEngine:
 
     def __init__(self, snapshot: CTIRSnapshot) -> None:
         self.snapshot = snapshot
-        self.facts: List[SourceFact] = list(snapshot.source_facts.values())
+        if (
+            snapshot.validation_report is not None
+            and snapshot.validation_report.overall_status == ValidationStatus.PASS
+        ):
+            self.facts: List[SourceFact] = [
+                f for f in snapshot.source_facts.values()
+                if f.verification_state == ValidationStatus.PASS
+            ]
+        else:
+            self.facts: List[SourceFact] = []
 
     @staticmethod
     def _normalize_tokens(text: str) -> List[str]:
@@ -54,6 +63,21 @@ class CTIRQueryEngine:
         """
         Executes coordinate-aware retrieval over CTIR facts.
         """
+        # 0. Trust Boundary Admission Check:
+        # Admit fact iff SnapshotStatus == PASS and FactStatus == PASS
+        if (
+            self.snapshot.validation_report is None
+            or self.snapshot.validation_report.overall_status != ValidationStatus.PASS
+        ):
+            return []
+
+        candidates = [
+            f for f in self.snapshot.source_facts.values()
+            if f.verification_state == ValidationStatus.PASS
+        ]
+        if not candidates:
+            return []
+
         # Determine query search terms
         search_metric = (target_metric or question).lower()
         search_period = (target_period or question).lower()
@@ -68,7 +92,7 @@ class CTIRQueryEngine:
 
         scored_candidates: List[Tuple[float, SourceFact]] = []
 
-        for fact in self.facts:
+        for fact in candidates:
             score = 0.0
 
             # 1. Metric Label Matching

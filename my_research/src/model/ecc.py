@@ -121,22 +121,14 @@ class FormalProofVerifier:
             # If transformation steps are declared on certificate or fact, replay them
             tx_steps = cert.transformation_steps or cert.fact.transformations
             if tx_steps:
-                curr_s = raw_val
-                replay_ok = True
-                for tx in tx_steps:
-                    curr_s = tx.output_result
-                    if not tx.replayed_successfully:
-                        replay_ok = False
-                        break
-                try:
-                    replayed_dec = parse_exact_decimal(curr_s.replace("$", "").replace(",", "").strip())
-                    if replayed_dec != expected_decimal:
-                        failures.append(
-                            f"Obligation 2 Failed (Transformation Replay Mismatch): "
-                            f"Replayed {replayed_dec} != Stored {expected_decimal}"
-                        )
-                except Exception as e:
-                    failures.append(f"Obligation 2 Failed: Forward replay raised {e}")
+                from .evidence import verify_transformation_chain
+                ok, err_code, err_msg = verify_transformation_chain(
+                    initial_text=raw_val,
+                    transformations=tx_steps,
+                    expected_value=cert.fact.typed_value,
+                )
+                if not ok:
+                    failures.append(f"Obligation 2 Failed ({err_code}): {err_msg}")
             else:
                 # Direct canonical parse check
                 s_clean = raw_val.strip()

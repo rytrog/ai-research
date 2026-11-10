@@ -407,6 +407,30 @@ def test_contract_c14_fact_lineage(base_doc, valid_fact_bundle):
     snap_mismatch = CTIRSnapshot("snap_mis", document=base_doc, source_facts={"f_rev": f_rev, "f_cogs": f_cogs}, derived_facts={"df_err": df_mismatch})
     assert any(d.code == "DERIVED_CALCULATION_MISMATCH" for d in CTIRValidator.verify_c14_fact_lineage(snap_mismatch))
 
+    # Negative 3: Lineage dependency cycle (df_a -> df_b -> df_a)
+    df_cyc_a = DerivedFact("df_cyc_a", "SUM", ("f_rev", "df_cyc_b"), ExactNumeric("100.00", Decimal("100.00")), unit, "100.00")
+    df_cyc_b = DerivedFact("df_cyc_b", "SUM", ("df_cyc_a",), ExactNumeric("100.00", Decimal("100.00")), unit, "100.00")
+    snap_cyc = CTIRSnapshot("snap_cyc", document=base_doc, source_facts={"f_rev": f_rev}, derived_facts={"df_cyc_a": df_cyc_a, "df_cyc_b": df_cyc_b})
+    assert any(d.code == "DERIVED_LINEAGE_CYCLE" for d in CTIRValidator.verify_c14_fact_lineage(snap_cyc))
+
+    # Negative 4: Incompatible currencies across inputs (USD vs EUR)
+    unit_eur = UnitAssertion(currency="EUR", scale_exponent=6)
+    f_eur = SourceFact("f_eur", "c3", coord, ExactNumeric("50.00", Decimal("50.00")), unit_eur, "50.00", valid_fact_bundle)
+    df_curr_bad = DerivedFact("df_curr_bad", "SUM", ("f_rev", "f_eur"), ExactNumeric("150.00", Decimal("150.00")), unit, "150.00")
+    snap_curr = CTIRSnapshot("snap_curr", document=base_doc, source_facts={"f_rev": f_rev, "f_eur": f_eur}, derived_facts={"df_curr_bad": df_curr_bad})
+    assert any(d.code == "DERIVED_UNIT_INCOMPATIBLE" for d in CTIRValidator.verify_c14_fact_lineage(snap_curr))
+
+    # Positive: Chained derived facts (f_rev + f_cogs -> df_gross; df_gross - f_tax -> df_net)
+    f_tax = SourceFact("f_tax", "c4", coord, ExactNumeric("10.00", Decimal("10.00")), unit, "10.00", valid_fact_bundle)
+    df_net = DerivedFact("df_net", "SUBTRACT", ("df_gross", "f_tax"), ExactNumeric("30.00", Decimal("30.00")), unit, "30.00")
+    snap_chained = CTIRSnapshot(
+        "snap_chain",
+        document=base_doc,
+        source_facts={"f_rev": f_rev, "f_cogs": f_cogs, "f_tax": f_tax},
+        derived_facts={"df_gross": df_ok, "df_net": df_net},
+    )
+    assert len(CTIRValidator.verify_c14_fact_lineage(snap_chained)) == 0
+
 
 # ==============================================================================
 # Contract C17: Stitched Fragments Preservation

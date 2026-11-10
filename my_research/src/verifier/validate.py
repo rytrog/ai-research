@@ -7,6 +7,7 @@ Emits structured ValidationReports with per-stage status and deterministic diagn
 
 from __future__ import annotations
 
+import decimal
 import re
 from decimal import Decimal
 from typing import Dict, List, Optional, Set, Tuple
@@ -23,6 +24,7 @@ from ..model.geometry import spans_overlap
 from ..model.graph import FootnoteNode, ReferenceGraph, StructuralGraph
 from ..model.temporal import DurationPeriod, InstantPeriod
 from ..model.value import (
+    DECIMAL_CONTEXT,
     BoundOperator,
     BoundedNumeric,
     ExactNumeric,
@@ -225,17 +227,19 @@ class CTIRValidator:
 
             # Forward replay verification across TransformationRecords
             if fact.transformations:
-                curr_str = raw_text
-                for tx in fact.transformations:
-                    curr_str = tx.output_result
-                    if not tx.replayed_successfully:
-                        diags.append(ValidationDiagnostic(
-                            code="TRANSFORMATION_REPLAY_MISMATCH",
-                            target_id=fact_id,
-                            severity="ERROR",
-                            message=f"Contract C8 violation: Transformation rule '{tx.rule_name}' failed replay.",
-                        ))
-                        break
+                from ..model.evidence import verify_transformation_chain
+                ok, err_code, err_msg = verify_transformation_chain(
+                    initial_text=raw_text,
+                    transformations=fact.transformations,
+                    expected_value=fact.typed_value,
+                )
+                if not ok:
+                    diags.append(ValidationDiagnostic(
+                        code=err_code or "TRANSFORMATION_REPLAY_MISMATCH",
+                        target_id=fact_id,
+                        severity="ERROR",
+                        message=f"Contract C8 violation: {err_msg}",
+                    ))
         return diags
 
     @classmethod
@@ -360,8 +364,60 @@ class CTIRValidator:
     def verify_c14_fact_lineage(cls, snapshot: CTIRSnapshot) -> List[ValidationDiagnostic]:
         """Contract C14: Reported facts vs Derived facts separation and arithmetic lineage verification."""
         diags: List[ValidationDiagnostic] = []
+
+        # 1. Lineage DAG Acyclicity: detect circular dependency chains among derived facts
+        adj: Dict[str, List[str]] = {
+            d_id: [inp for inp in df.input_fact_ids if inp in snapshot.derived_facts]
+            for d_id, df in snapshot.derived_facts.items()
+        }
+
+        state: Dict[str, int] = {k: 0 for k in adj}  # 0=unvisited, 1=visiting, 2=visited
+        has_cycle = False
+        cycle_nodes: Set[str] = set()
+
+        def dfs(node: str, stack: List[str]) -> None:
+            nonlocal has_cycle
+            state[node] = 1
+            stack.append(node)
+            for neighbor in adj.get(node, []):
+                if state.get(neighbor, 0) == 1:
+                    has_cycle = True
+                    cycle_nodes.add(node)
+                    cycle_nodes.add(neighbor)
+                elif state.get(neighbor, 0) == 0:
+                    dfs(neighbor, stack)
+            stack.pop()
+            state[node] = 2
+
+        for k in adj:
+            if state[k] == 0:
+                dfs(k, [])
+
+        if has_cycle:
+            for c_node in sorted(cycle_nodes):
+                diags.append(ValidationDiagnostic(
+                    code="DERIVED_LINEAGE_CYCLE",
+                    target_id=c_node,
+                    severity="ERROR",
+                    message=f"Contract C14 violation: Lineage dependency cycle detected involving derived fact '{c_node}'",
+                ))
+
+        # 2. Per-derived fact validation
         for d_id, df in snapshot.derived_facts.items():
-            missing_inputs = [inp for inp in df.input_fact_ids if inp not in snapshot.source_facts]
+            if not df.input_fact_ids:
+                diags.append(ValidationDiagnostic(
+                    code="DERIVED_NO_INPUTS",
+                    target_id=d_id,
+                    severity="ERROR",
+                    message=f"Contract C14 violation: Derived fact '{d_id}' has no input fact references",
+                ))
+                continue
+
+            # Verify all inputs exist in source_facts OR derived_facts
+            missing_inputs = [
+                inp for inp in df.input_fact_ids
+                if inp not in snapshot.source_facts and inp not in snapshot.derived_facts
+            ]
             if missing_inputs:
                 diags.append(ValidationDiagnostic(
                     code="DERIVED_MISSING_INPUT_FACT",
@@ -369,18 +425,108 @@ class CTIRValidator:
                     severity="ERROR",
                     message=f"Contract C14 violation: Derived fact '{d_id}' references missing inputs: {missing_inputs}",
                 ))
-            else:
-                input_vals = [snapshot.source_facts[inp].typed_value for inp in df.input_fact_ids]
-                if all(isinstance(v, ExactNumeric) for v in input_vals) and isinstance(df.result_value, ExactNumeric):
-                    if df.expression_name == "ADD_OUTFLOW":
-                        expected = sum((v.value for v in input_vals), Decimal("0"))
-                        if expected != df.result_value.value:
+                continue
+
+            # Verify no input is in FAIL state
+            failed_inputs = []
+            for inp in df.input_fact_ids:
+                f_obj = snapshot.source_facts.get(inp) or snapshot.derived_facts.get(inp)
+                if f_obj and f_obj.verification_state == ValidationStatus.FAIL:
+                    failed_inputs.append(inp)
+            if failed_inputs:
+                diags.append(ValidationDiagnostic(
+                    code="DERIVED_INPUT_FAILED",
+                    target_id=d_id,
+                    severity="ERROR",
+                    message=f"Contract C14 violation: Derived fact '{d_id}' depends on failed input fact(s): {failed_inputs}",
+                ))
+
+            # Retrieve input objects
+            input_objs = [
+                snapshot.source_facts.get(inp) or snapshot.derived_facts.get(inp)
+                for inp in df.input_fact_ids
+            ]
+
+            # Verify input types are ExactNumeric
+            input_vals: List[ExactNumeric] = []
+            has_non_numeric = False
+            for obj in input_objs:
+                val = getattr(obj, "typed_value", None) or getattr(obj, "result_value", None)
+                if isinstance(val, ExactNumeric):
+                    input_vals.append(val)
+                else:
+                    has_non_numeric = True
+                    break
+
+            if has_non_numeric or not isinstance(df.result_value, ExactNumeric):
+                diags.append(ValidationDiagnostic(
+                    code="DERIVED_INPUT_NON_NUMERIC",
+                    target_id=d_id,
+                    severity="ERROR",
+                    message=f"Contract C14 violation: Derived fact '{d_id}' requires exact numeric inputs and output",
+                ))
+                continue
+
+            # Check unit/currency compatibility for additive / subtractive ops
+            if df.expression_name in ("ADD_OUTFLOW", "SUM", "SUBTRACT"):
+                currencies = {obj.unit.currency for obj in input_objs if obj and obj.unit and obj.unit.currency}
+                if len(currencies) > 1:
+                    diags.append(ValidationDiagnostic(
+                        code="DERIVED_UNIT_INCOMPATIBLE",
+                        target_id=d_id,
+                        severity="ERROR",
+                        message=f"Contract C14 violation: Incompatible currencies across inputs for '{d_id}': {sorted(currencies)}",
+                    ))
+
+            # Exact Arithmetic Replay under DECIMAL_CONTEXT
+            with decimal.localcontext(DECIMAL_CONTEXT):
+                expected: Optional[Decimal] = None
+                if df.expression_name in ("ADD_OUTFLOW", "SUM"):
+                    expected = sum((v.value for v in input_vals), Decimal("0"))
+                elif df.expression_name == "SUBTRACT":
+                    if len(input_vals) >= 2:
+                        expected = input_vals[0].value - sum((v.value for v in input_vals[1:]), Decimal("0"))
+                    elif len(input_vals) == 1:
+                        expected = -input_vals[0].value
+                elif df.expression_name == "MULTIPLY":
+                    prod = Decimal("1")
+                    for v in input_vals:
+                        prod *= v.value
+                    expected = prod
+                elif df.expression_name in ("DIVIDE", "RATIO"):
+                    if len(input_vals) == 2:
+                        if input_vals[1].value != 0:
+                            expected = input_vals[0].value / input_vals[1].value
+                        else:
                             diags.append(ValidationDiagnostic(
-                                code="DERIVED_CALCULATION_MISMATCH",
+                                code="DERIVED_DIVISION_BY_ZERO",
                                 target_id=d_id,
                                 severity="ERROR",
-                                message=f"Contract C14 violation: Derived calculation expected {expected}, got {df.result_value.value}",
+                                message=f"Contract C14 violation: Division by zero in derived fact '{d_id}'",
                             ))
+                    else:
+                        diags.append(ValidationDiagnostic(
+                            code="DERIVED_ARITY_MISMATCH",
+                            target_id=d_id,
+                            severity="ERROR",
+                            message=f"Contract C14 violation: Expression '{df.expression_name}' expects 2 operands, got {len(input_vals)}",
+                        ))
+                else:
+                    diags.append(ValidationDiagnostic(
+                        code="DERIVED_UNKNOWN_EXPRESSION",
+                        target_id=d_id,
+                        severity="ERROR",
+                        message=f"Contract C14 violation: Unknown derived expression '{df.expression_name}' in '{d_id}'",
+                    ))
+
+                if expected is not None:
+                    if expected != df.result_value.value:
+                        diags.append(ValidationDiagnostic(
+                            code="DERIVED_CALCULATION_MISMATCH",
+                            target_id=d_id,
+                            severity="ERROR",
+                            message=f"Contract C14 violation: Derived calculation expected {expected}, got {df.result_value.value}",
+                        ))
         return diags
 
     @classmethod
