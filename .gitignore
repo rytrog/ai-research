@@ -4,3 +4,11 @@ __pycache__/
 .pytest_cache/
 .coverage
 
+# Models, checkpoints, and weights
+Qwen3-Embedding-0.6B/
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.onnx
+
