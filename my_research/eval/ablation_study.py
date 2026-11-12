@@ -26,6 +26,7 @@ from my_research.src.adapter.ascii_table import AsciiTableScheduleAdapter
 from my_research.src.adapter.base import BaseTableAdapter
 from my_research.src.chunker.relation_preserving_chunker import RelationPreservingTableChunker
 from my_research.src.compiler.table_compiler import TableCompiler
+from my_research.src.model.semantic import ScopeLevel, UnitAssertion
 
 
 def run_ablation_configuration(
@@ -105,7 +106,8 @@ def run_ablation_configuration(
             for f in top_chunk.structured_facts:
                 val = getattr(f.typed_value, "value", None)
                 if val is not None:
-                    scaled = val * (10 ** f.unit.scale_exponent)
+                    scale_exp = f.unit.scale_exponent if (f.unit and f.unit.scale_exponent is not None) else 0
+                    scaled = val * (10 ** scale_exp)
                     if any(val == vt or scaled == vt for vt in valid_targets):
                         has_nva = True
                         break
@@ -140,7 +142,9 @@ def run_ablation_study() -> Tuple[List[BenchmarkAggregateSummary], str, str]:
     adapter = AsciiTableScheduleAdapter()
     frag, footnotes, coord_space = adapter.parse(doc, schedule_text, table_id="t_ablation")
 
-    compiler = TableCompiler()
+    compiler = TableCompiler(
+        table_default_unit=UnitAssertion(currency="USD", scale_exponent=6, source_scope=ScopeLevel.TABLE)
+    )
     snapshot = compiler.compile(
         source_doc=doc,
         fragment=frag,

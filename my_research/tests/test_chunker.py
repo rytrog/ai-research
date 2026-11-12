@@ -16,6 +16,7 @@ from my_research.src.baselines.markdown_chunker import MarkdownRowGroupChunker
 from my_research.src.baselines.naive_chunker import NaiveFixedWindowChunker
 from my_research.src.chunker.relation_preserving_chunker import RelationPreservingTableChunker
 from my_research.src.compiler.table_compiler import TableCompiler
+from my_research.src.model.semantic import ScopeLevel, UnitAssertion
 
 DATA_DIR = pathlib.Path(__file__).resolve().parent.parent / "data"
 
@@ -29,7 +30,9 @@ def compiled_sec_snapshot():
     doc, _ = BaseTableAdapter.create_source_document("doc_sec_test", content, "text/plain")
     adapter = AsciiTableScheduleAdapter()
     frag, footnotes, coord_space = adapter.parse(doc, content, table_id="t_sec_test")
-    compiler = TableCompiler()
+    compiler = TableCompiler(
+        table_default_unit=UnitAssertion(currency="USD", scale_exponent=6, source_scope=ScopeLevel.TABLE)
+    )
     return compiler.compile(
         source_doc=doc,
         fragment=frag,

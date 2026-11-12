@@ -281,6 +281,8 @@ class CTIRValidator:
         diags: List[ValidationDiagnostic] = []
         for fact_id, fact in snapshot.source_facts.items():
             unit = fact.unit
+            if unit is None:
+                continue
             if unit.scale_exponent is not None:
                 if not isinstance(unit.scale_exponent, int):
                     diags.append(ValidationDiagnostic(
@@ -333,8 +335,15 @@ class CTIRValidator:
                 diags.append(ValidationDiagnostic(
                     code="SCOPE_UNRESOLVED_UNIT",
                     target_id=fact_id,
-                    severity="ERROR",
-                    message=f"Contract C12 violation: Fact '{fact_id}' has null unit assertion.",
+                    severity="WARNING",
+                    message=f"Contract C12: Fact '{fact_id}' has null unit assertion.",
+                ))
+            elif fact.unit.currency is None and fact.unit.physical_unit is None and fact.unit.scale_exponent is None:
+                diags.append(ValidationDiagnostic(
+                    code="SCOPE_UNRESOLVED_UNIT",
+                    target_id=fact_id,
+                    severity="WARNING",
+                    message=f"Contract C12: Fact '{fact_id}' has no declared currency, physical unit, or scale.",
                 ))
         return diags
 
@@ -530,6 +539,55 @@ class CTIRValidator:
         return diags
 
     @classmethod
+    def verify_c15_serialization_round_trip(cls, snapshot: CTIRSnapshot) -> List[ValidationDiagnostic]:
+        """Contract C15: Canonical serialization round-trip: Deserialize(Serialize(CTIR)) == CTIR."""
+        diags: List[ValidationDiagnostic] = []
+        try:
+            from ..storage.serialize import serialize_ctir_to_json, deserialize_ctir_from_json
+            json_str = serialize_ctir_to_json(snapshot)
+            reconstructed = deserialize_ctir_from_json(json_str)
+
+            if reconstructed.snapshot_id != snapshot.snapshot_id:
+                diags.append(ValidationDiagnostic(
+                    code="SERIALIZATION_MISMATCH",
+                    target_id=snapshot.snapshot_id,
+                    severity="ERROR",
+                    message="Contract C15 failure: Snapshot ID mismatch after round-trip deserialization.",
+                ))
+            if len(reconstructed.source_facts) != len(snapshot.source_facts):
+                diags.append(ValidationDiagnostic(
+                    code="SERIALIZATION_FACTS_LOST",
+                    target_id=snapshot.snapshot_id,
+                    severity="ERROR",
+                    message=f"Contract C15 failure: Source facts lost in round-trip ({len(reconstructed.source_facts)} != {len(snapshot.source_facts)}).",
+                ))
+            else:
+                for fid, orig_f in snapshot.source_facts.items():
+                    rec_f = reconstructed.source_facts.get(fid)
+                    if rec_f is None:
+                        diags.append(ValidationDiagnostic(
+                            code="SERIALIZATION_FACT_MISSING",
+                            target_id=fid,
+                            severity="ERROR",
+                            message=f"Contract C15 failure: Fact '{fid}' missing in round-trip snapshot.",
+                        ))
+                    elif rec_f.canonical_display != orig_f.canonical_display:
+                        diags.append(ValidationDiagnostic(
+                            code="SERIALIZATION_FACT_MUTATED",
+                            target_id=fid,
+                            severity="ERROR",
+                            message=f"Contract C15 failure: Fact '{fid}' mutated in round-trip.",
+                        ))
+        except Exception as e:
+            diags.append(ValidationDiagnostic(
+                code="SERIALIZATION_FAILURE",
+                target_id=snapshot.snapshot_id,
+                severity="ERROR",
+                message=f"Contract C15 failure: Serialization/deserialization failed with {e}",
+            ))
+        return diags
+
+    @classmethod
     def verify_c17_stitched_fragments(cls, snapshot: CTIRSnapshot) -> List[ValidationDiagnostic]:
         """Contract C17: Multi-page fragment stitching preserves all underlying fragment IDs."""
         diags: List[ValidationDiagnostic] = []
@@ -662,19 +720,8 @@ class CTIRValidator:
         v8_diags = cls.verify_c14_fact_lineage(snapshot)
 
         # Stage 9: Serialization Verification (Contract C15)
-        v9_diags: List[ValidationDiagnostic] = []
-        try:
-            from ..storage.serialize import serialize_ctir_to_json
-            _ = serialize_ctir_to_json(snapshot)
-            ser_status = ValidationStatus.PASS
-        except Exception as e:
-            ser_status = ValidationStatus.FAIL
-            v9_diags.append(ValidationDiagnostic(
-                code="SERIALIZATION_FAILURE",
-                target_id=snapshot.snapshot_id,
-                severity="ERROR",
-                message=f"Contract C15 failure: Serialization failed with {e}",
-            ))
+        v9_diags = cls.verify_c15_serialization_round_trip(snapshot)
+        ser_status = ValidationStatus.FAIL if any(d.severity == "ERROR" for d in v9_diags) else ValidationStatus.PASS
 
         def _compute_status(diags: List[ValidationDiagnostic]) -> ValidationStatus:
             if any(d.severity == "ERROR" for d in diags):

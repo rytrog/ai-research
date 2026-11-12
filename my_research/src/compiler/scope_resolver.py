@@ -37,11 +37,7 @@ class ScopeResolver:
     }
 
     def __init__(self, table_default_unit: Optional[UnitAssertion] = None) -> None:
-        self.table_default_unit = table_default_unit or UnitAssertion(
-            currency="USD",
-            scale_exponent=6,  # Default $ Millions
-            source_scope=ScopeLevel.TABLE,
-        )
+        self.table_default_unit = table_default_unit
 
     @classmethod
     def resolve_period_from_headers(
@@ -196,7 +192,7 @@ class ScopeResolver:
         column: LogicalColumn,
         cell_detected_currency: Optional[str] = None,
         cell_detected_unit: Optional[str] = None,
-    ) -> Tuple[Quantity, UnitAssertion]:
+    ) -> Tuple[Quantity, Optional[UnitAssertion]]:
         """
         Resolves the exact Quantity and canonical amount using poset scope resolution.
         """
@@ -204,10 +200,15 @@ class ScopeResolver:
 
         cell_unit = None
         if cell_detected_currency or cell_detected_unit:
+            default_scale = (
+                0 if cell_detected_unit == "PERCENT"
+                else (row_unit.scale_exponent if row_unit and row_unit.scale_exponent is not None
+                      else (self.table_default_unit.scale_exponent if self.table_default_unit else None))
+            )
             cell_unit = UnitAssertion(
                 currency=cell_detected_currency,
                 physical_unit=cell_detected_unit,
-                scale_exponent=0 if cell_detected_unit == "PERCENT" else (row_unit.scale_exponent if row_unit else self.table_default_unit.scale_exponent),
+                scale_exponent=default_scale,
                 source_scope=ScopeLevel.CELL,
             )
 
@@ -219,16 +220,25 @@ class ScopeResolver:
             table_unit=self.table_default_unit,
         )
 
-        final_unit = resolved_unit or self.table_default_unit
-        multiplier = final_unit.scale_multiplier
-        canonical_amount = numeric_val * multiplier
+        final_unit = resolved_unit
+        if final_unit is not None:
+            multiplier = final_unit.scale_multiplier
+            canonical_amount = numeric_val * multiplier if multiplier is not None else None
+            scale_exp = final_unit.scale_exponent
+            curr = final_unit.currency
+            phys = final_unit.physical_unit
+        else:
+            canonical_amount = None
+            scale_exp = None
+            curr = None
+            phys = None
 
         quantity = Quantity(
             raw_text=raw_text,
             numeric_value=numeric_val,
-            currency=final_unit.currency,
-            physical_unit=final_unit.physical_unit,
-            scale_exponent=final_unit.scale_exponent,
+            currency=curr,
+            physical_unit=phys,
+            scale_exponent=scale_exp,
             canonical_amount=canonical_amount,
         )
 

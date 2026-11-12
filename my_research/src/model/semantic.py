@@ -50,9 +50,11 @@ class UnitAssertion:
     source_ref: Optional[SourceRef] = None
 
     @property
-    def scale_multiplier(self) -> Decimal:
-        """Returns exact Decimal multiplier (e.g. 10^6 -> Decimal('1000000'), 10^0 -> 1)."""
-        if self.scale_exponent is None or self.scale_exponent == 0:
+    def scale_multiplier(self) -> Optional[Decimal]:
+        """Returns exact Decimal multiplier (e.g. 10^6 -> Decimal('1000000'), 10^0 -> 1) or None if scale_exponent is None."""
+        if self.scale_exponent is None:
+            return None
+        elif self.scale_exponent == 0:
             return Decimal(1)
         elif self.scale_exponent > 0:
             return Decimal(10 ** self.scale_exponent)
@@ -65,10 +67,10 @@ class Quantity:
     """A fully contextualized physical or monetary quantity."""
     raw_text: str
     numeric_value: Decimal
-    currency: Optional[str]
-    physical_unit: Optional[str]
-    scale_exponent: int
-    canonical_amount: Decimal
+    currency: Optional[str] = None
+    physical_unit: Optional[str] = None
+    scale_exponent: Optional[int] = None
+    canonical_amount: Optional[Decimal] = None
     reported_decimals: Optional[int] = None
 
 
@@ -103,6 +105,19 @@ class ScopeConflictResolver:
         where Cell > (Row x Col) > Table.
         A cell-level assertion on currency does NOT erase a row/column physical unit!
         """
+        # Check if any unit assertions exist across scopes
+        units = [u for u in (cell_unit, row_unit, col_unit, table_unit) if u is not None]
+        has_any_property = any(
+            u.currency is not None or u.physical_unit is not None or u.scale_exponent is not None or u.xbrl_decimals is not None
+            for u in units
+        )
+        if not has_any_property:
+            return (
+                ResolutionStatus.UNRESOLVED,
+                None,
+                "No unit assertions declared in any applicable scope",
+            )
+
         # Check conflict between orthogonal Row and Column scopes
         if row_unit is not None and col_unit is not None:
             if row_unit.currency and col_unit.currency and row_unit.currency != col_unit.currency:
@@ -145,7 +160,7 @@ class ScopeConflictResolver:
         table_phys = table_unit.physical_unit if table_unit else None
         resolved_physical_unit = cell_phys or row_phys or col_phys or table_phys
 
-        # 3. Resolve Scale Exponent
+        # 3. Resolve Scale Exponent (Preserve None if unknown; never silently assume 10^0)
         cell_scale = cell_unit.scale_exponent if (cell_unit and cell_unit.scale_exponent is not None) else None
         row_scale = row_unit.scale_exponent if (row_unit and row_unit.scale_exponent is not None) else None
         col_scale = col_unit.scale_exponent if (col_unit and col_unit.scale_exponent is not None) else None
@@ -160,7 +175,7 @@ class ScopeConflictResolver:
         elif table_scale is not None:
             resolved_scale = table_scale
         else:
-            resolved_scale = 0
+            resolved_scale = None
 
         # 4. Resolve Reported Decimals / Precision
         cell_dec = cell_unit.xbrl_decimals if cell_unit else None
@@ -168,6 +183,14 @@ class ScopeConflictResolver:
         col_dec = col_unit.xbrl_decimals if col_unit else None
         table_dec = table_unit.xbrl_decimals if table_unit else None
         resolved_decimals = cell_dec or row_dec or col_dec or table_dec
+
+        # If after resolution neither currency, physical unit, nor scale exponent is known:
+        if resolved_currency is None and resolved_physical_unit is None and resolved_scale is None:
+            return (
+                ResolutionStatus.UNRESOLVED,
+                None,
+                "Unit assertions lack valid currency, physical unit, or scale",
+            )
 
         # Determine source scope of composite resolution
         if cell_unit is not None:

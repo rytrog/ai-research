@@ -187,11 +187,16 @@ class STESFact(SourceFact):
         if canonical_display is None:
             if isinstance(typed_value, ExactNumeric):
                 val = typed_value.value
-                mult = unit.scale_multiplier
-                total = val * mult
-                curr = f"{unit.currency} " if unit.currency else ""
-                phys = f" {unit.physical_unit}" if unit.physical_unit else ""
-                canonical_display = f"{curr}{total:,.2f}{phys}".strip()
+                mult = unit.scale_multiplier if unit else None
+                if mult is not None:
+                    total = val * mult
+                    curr = f"{unit.currency} " if unit and unit.currency else ""
+                    phys = f" {unit.physical_unit}" if unit and unit.physical_unit else ""
+                    canonical_display = f"{curr}{total:,.2f}{phys}".strip()
+                else:
+                    curr = f"{unit.currency} " if unit and unit.currency else ""
+                    phys = f" {unit.physical_unit}" if unit and unit.physical_unit else ""
+                    canonical_display = f"{curr}{val}{phys}".strip()
             else:
                 canonical_display = getattr(typed_value, "raw_text", "")
 

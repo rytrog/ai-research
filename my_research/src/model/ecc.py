@@ -13,6 +13,9 @@ from decimal import Decimal
 from enum import Enum
 from typing import Dict, List, Optional, Tuple, Any
 
+from cryptography.exceptions import InvalidSignature
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey, Ed25519PublicKey
+
 from .source import BoundingBox
 from .evidence import EvidenceAnchor, MultiSourceProvenanceBundle, TransformationRecord
 from .ctir import SourceFact
@@ -86,6 +89,42 @@ class FormalProofVerifier:
     """
 
     HEX_64_PATTERN = re.compile(r"^[a-fA-F0-9]{64}$")
+    TRUSTED_KEY_REGISTRY: Dict[str, Ed25519PublicKey] = {}
+
+    @classmethod
+    def register_trusted_key(cls, key_id: str, public_key: Ed25519PublicKey) -> None:
+        """Registers a trusted Ed25519 public key in the verifier's key ring."""
+        cls.TRUSTED_KEY_REGISTRY[key_id] = public_key
+
+    @classmethod
+    def clear_trusted_keys(cls) -> None:
+        """Clears the trusted key ring."""
+        cls.TRUSTED_KEY_REGISTRY.clear()
+
+    @classmethod
+    def sign_fact(
+        cls,
+        certificate_id: str,
+        fact_id: str,
+        canonical_display: str,
+        private_key: Ed25519PrivateKey,
+        key_id: str,
+    ) -> CryptoSignaturePayload:
+        """
+        Generates an authentic Ed25519 signature payload for a fact certificate.
+        """
+        hasher = hashlib.sha256()
+        hasher.update(certificate_id.encode("utf-8"))
+        hasher.update(fact_id.encode("utf-8"))
+        hasher.update(str(canonical_display).encode("utf-8"))
+        digest = hasher.hexdigest()
+        sig_bytes = private_key.sign(digest.encode("utf-8")).hex()
+        return CryptoSignaturePayload(
+            algorithm="Ed25519",
+            key_id=key_id,
+            payload_digest=digest,
+            signature_bytes=sig_bytes,
+        )
 
     @classmethod
     def verify_fact_certificate(cls, cert: EvidenceClosureCertificate) -> Tuple[VerificationVerdict, List[str]]:
@@ -156,16 +195,41 @@ class FormalProofVerifier:
         if cert.fact.unit is None:
             failures.append("Obligation 4 Failed: Unit assertion is null.")
 
-        # Obligation 5: Cryptographic Digest Verification (Contract C1)
+        # Obligation 5: Cryptographic Authenticity Verification (Contract C1)
         if cert.signature is not None:
+            sig = cert.signature
+            if sig.algorithm != "Ed25519":
+                failures.append(f"Obligation 5 Failed: Unsupported signature algorithm '{sig.algorithm}', expected Ed25519.")
+
             hasher = hashlib.sha256()
             hasher.update(cert.certificate_id.encode("utf-8"))
             hasher.update(cert.fact_id.encode("utf-8"))
             canonical_disp = getattr(cert.fact, "canonical_display", None) or getattr(cert.fact, "canonical_display_value", "")
             hasher.update(str(canonical_disp).encode("utf-8"))
             computed_digest = hasher.hexdigest()
-            if cert.signature.payload_digest and cert.signature.payload_digest != computed_digest:
-                failures.append(f"Obligation 5 Failed: Cryptographic payload digest mismatch: '{cert.signature.payload_digest}' != '{computed_digest}'")
+
+            if sig.payload_digest and sig.payload_digest != computed_digest:
+                failures.append(f"Obligation 5 Failed: Cryptographic payload digest mismatch: '{sig.payload_digest}' != '{computed_digest}'")
+
+            # Public-key authenticity verification against TRUSTED_KEY_REGISTRY
+            if sig.key_id not in cls.TRUSTED_KEY_REGISTRY:
+                failures.append(f"Obligation 5 Failed: Untrusted or unregistered public key ID '{sig.key_id}'.")
+            else:
+                pub_key = cls.TRUSTED_KEY_REGISTRY[sig.key_id]
+                try:
+                    if isinstance(sig.signature_bytes, str):
+                        try:
+                            raw_sig = bytes.fromhex(sig.signature_bytes)
+                        except ValueError:
+                            raw_sig = sig.signature_bytes.encode("utf-8")
+                    else:
+                        raw_sig = bytes(sig.signature_bytes)
+
+                    pub_key.verify(raw_sig, computed_digest.encode("utf-8"))
+                except InvalidSignature:
+                    failures.append(f"Obligation 5 Failed: Ed25519 signature is invalid/forged for key '{sig.key_id}'.")
+                except Exception as e:
+                    failures.append(f"Obligation 5 Failed: Ed25519 cryptographic verification error: {e}")
 
         if not failures:
             return VerificationVerdict.PASS, []

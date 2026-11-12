@@ -542,7 +542,9 @@ def test_end_to_end_tristate_validator_evaluation():
     adapter = AsciiTableScheduleAdapter()
     frag, footnotes, coord_space = adapter.parse(doc, content, table_id="t_tristate")
 
-    compiler = TableCompiler()
+    compiler = TableCompiler(
+        table_default_unit=UnitAssertion(currency="USD", scale_exponent=6, source_scope=ScopeLevel.TABLE)
+    )
     snapshot = compiler.compile(
         source_doc=doc,
         fragment=frag,

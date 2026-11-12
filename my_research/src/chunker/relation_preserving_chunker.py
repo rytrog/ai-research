@@ -7,14 +7,20 @@ Guarantees 100% information preservation: zero coordinate loss, zero header loss
 from __future__ import annotations
 
 import hashlib
+import re
 from dataclasses import dataclass, field
 from decimal import Decimal
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from ..model.ctir import CTIRSnapshot, SourceFact
 from ..model.graph import FootnoteNode
 from ..model.structural import LogicalColumn, LogicalRow
 from ..model.temporal import DurationPeriod, InstantPeriod
+
+
+class ChunkBudgetExceededError(ValueError):
+    """Raised when an oversized row or table fragment exceeds the configured token budget."""
+    pass
 
 
 @dataclass(frozen=True)
@@ -74,6 +80,7 @@ class RelationPreservingTableChunker:
         enable_superheader_closure: bool = True,
         enable_footnote_colocation: bool = True,
         enable_row_hierarchy: bool = True,
+        tokenizer: Optional[Any] = None,
     ) -> None:
         self.max_rows_per_chunk = max_rows_per_chunk
         self.token_budget = token_budget
@@ -82,11 +89,24 @@ class RelationPreservingTableChunker:
         self.enable_superheader_closure = enable_superheader_closure
         self.enable_footnote_colocation = enable_footnote_colocation
         self.enable_row_hierarchy = enable_row_hierarchy
+        self.tokenizer = tokenizer
 
-    @staticmethod
-    def _estimate_tokens(text: str) -> int:
-        """Heuristic BPE token estimator (~4 chars per token)."""
-        return max(1, len(text) // 4)
+    def _estimate_tokens(self, text: str) -> int:
+        """
+        Calculates token count using custom tokenizer if supplied,
+        or standard BPE character/word heuristic (max(len(text)//4, word_count)).
+        """
+        if not text:
+            return 0
+        if self.tokenizer is not None:
+            if callable(self.tokenizer):
+                return len(self.tokenizer(text))
+            elif hasattr(self.tokenizer, "encode"):
+                return len(self.tokenizer.encode(text))
+        # Standard conservative subword estimator: ~4 chars per token, but bounded by word splitting
+        char_est = len(text) // 4
+        words = re.findall(r"\w+|[^\w\s]", text, re.UNICODE)
+        return max(1, max(char_est, int(len(words) * 1.15)))
 
     def chunk_snapshot(
         self,
@@ -177,6 +197,13 @@ class RelationPreservingTableChunker:
 
             row_text = "\n".join(row_lines)
             row_tokens = self._estimate_tokens(row_text)
+
+            # Contract enforcement: Check if this row alone exceeds the configured token budget
+            if row_tokens + base_header_tokens > self.token_budget:
+                raise ChunkBudgetExceededError(
+                    f"Row at position {r_pos} requires {row_tokens + base_header_tokens} tokens, "
+                    f"exceeding maximum chunk budget of {self.token_budget}."
+                )
 
             # Check if adding this row exceeds token_budget and we already have at least 1 row
             if curr_row_slice and (curr_slice_tokens + row_tokens > self.token_budget or len(curr_row_slice) >= self.max_rows_per_chunk):
@@ -311,6 +338,28 @@ class RelationPreservingTableChunker:
         fact_ids_tuple = tuple(f.fact_id for f in chunk_facts)
         tok_est = self._estimate_tokens(dense_text)
 
+        # Dynamic Truthful ECC Verification
+        has_headers = (
+            (self.enable_coordinate_closure and "[DOCUMENT_TABLE:" in dense_text and "[ENTITY:" in dense_text)
+            or (self.enable_superheader_closure and "[ROW_HIERARCHY:" in dense_text)
+        )
+        if not self.enable_coordinate_closure and not self.enable_superheader_closure:
+            has_headers = False
+
+        has_units = (
+            self.enable_coordinate_closure
+            and "[GLOBAL_CONVENTION:" in dense_text
+            and any(f.unit is not None and (f.unit.currency is not None or f.unit.scale_exponent is not None) for f in chunk_facts)
+        )
+        if not self.enable_coordinate_closure:
+            has_units = False
+
+        has_footnotes = (
+            len(chunk_cited_footnotes) > 0
+            and self.enable_footnote_colocation
+            and "[COLOCATED_FOOTNOTES_IN_CHUNK]:" in dense_text
+        )
+
         ecc_chunk = TableChunkECC(
             chunk_id=chunk_id,
             fact_ids=fact_ids_tuple,
@@ -318,9 +367,9 @@ class RelationPreservingTableChunker:
             column_count=col_count,
             content_sha256=content_digest,
             token_estimate=tok_est,
-            has_header_closure=True,
-            has_unit_closure=True,
-            has_footnote_closure=len(chunk_cited_footnotes) > 0,
+            has_header_closure=has_headers,
+            has_unit_closure=has_units,
+            has_footnote_closure=has_footnotes,
         )
 
         return RelationPreservingChunk(

@@ -87,7 +87,7 @@ class SourceFact:
     source_cell_id: str
     coordinates: FactCoordinates
     typed_value: TypedSemanticValue
-    unit: UnitAssertion
+    unit: Optional[UnitAssertion]
     canonical_display: str
     provenance: MultiSourceProvenanceBundle
     verification_state: ValidationStatus = ValidationStatus.UNRESOLVED
@@ -116,7 +116,7 @@ class DerivedFact:
     expression_name: str                 # e.g. 'SUBTRACT'
     input_fact_ids: Tuple[str, ...]      # Lineage inputs (e.g. ('F_REV', 'F_COGS'))
     result_value: TypedSemanticValue
-    unit: UnitAssertion
+    unit: Optional[UnitAssertion]
     canonical_display: str
     execution_engine: str = "DECIMAL_KERNEL"
     verification_state: ValidationStatus = ValidationStatus.UNRESOLVED

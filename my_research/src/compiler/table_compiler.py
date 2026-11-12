@@ -210,13 +210,18 @@ class TableCompiler:
 
             # Unit Anchor
             unit_anchor_id = f"ev_unit_{current_row.row_id}_{current_col.column_id}"
+            if resolved_unit is not None:
+                scale_part = f"10^{resolved_unit.scale_exponent}" if resolved_unit.scale_exponent is not None else "scale:unspecified"
+                unit_text = f"{resolved_unit.currency or ''} {scale_part} {resolved_unit.physical_unit or ''}".strip()
+            else:
+                unit_text = "unit:unresolved"
             unit_anchor = EvidenceAnchor(
                 evidence_id=unit_anchor_id,
                 document_hash=source_doc.sha256,
                 page_id=fragment.page_id,
                 region_id=fragment.fragment_id,
                 bbox=None,
-                raw_text=f"{resolved_unit.currency or ''} 10^{resolved_unit.scale_exponent} {resolved_unit.physical_unit or ''}".strip(),
+                raw_text=unit_text,
                 evidence_role=EvidenceRole.UNIT_DECLARATION,
             )
             evidence_anchors_map[unit_anchor_id] = unit_anchor
@@ -282,14 +287,22 @@ class TableCompiler:
 
             # 4. Construct Canonical Display String
             if isinstance(typed_val, ExactNumeric):
-                if resolved_unit.physical_unit in ("USD/share", "per share", "USD per share"):
-                    canonical_disp = f"{resolved_unit.currency or 'USD'} {quantity.canonical_amount:,.2f} per share"
+                if resolved_unit is None:
+                    canonical_disp = cell.raw_text
+                elif resolved_unit.physical_unit in ("USD/share", "per share", "USD per share"):
+                    amt_str = f"{quantity.canonical_amount:,.2f}" if quantity.canonical_amount is not None else cell.raw_text
+                    canonical_disp = f"{resolved_unit.currency or 'USD'} {amt_str} per share"
                 elif resolved_unit.currency and not resolved_unit.physical_unit:
-                    canonical_disp = f"{resolved_unit.currency} {quantity.canonical_amount:,.2f}"
+                    if quantity.canonical_amount is not None:
+                        canonical_disp = f"{resolved_unit.currency} {quantity.canonical_amount:,.2f}"
+                    else:
+                        canonical_disp = f"{resolved_unit.currency} {cell.raw_text}"
                 elif resolved_unit.physical_unit == "PERCENT":
                     canonical_disp = f"{quantity.numeric_value:,.2f}%"
-                else:
+                elif quantity.canonical_amount is not None:
                     canonical_disp = f"{quantity.canonical_amount:,.2f} {resolved_unit.physical_unit or ''}".strip()
+                else:
+                    canonical_disp = f"{cell.raw_text} {resolved_unit.physical_unit or ''}".strip()
             elif isinstance(typed_val, BoundedNumeric):
                 canonical_disp = f"{typed_val.operator.value}{typed_val.bound}"
             elif isinstance(typed_val, MissingValue):
@@ -357,8 +370,13 @@ class TableCompiler:
             if ocf_fact and capex_fact:
                 if isinstance(ocf_fact.typed_value, ExactNumeric) and isinstance(capex_fact.typed_value, ExactNumeric):
                     fcf_val = ocf_fact.typed_value.value + capex_fact.typed_value.value
-                    scale = ocf_fact.unit.scale_multiplier
-                    fcf_canonical = fcf_val * scale
+                    scale = ocf_fact.unit.scale_multiplier if ocf_fact.unit else None
+                    if scale is not None:
+                        fcf_canonical = fcf_val * scale
+                        curr_str = f"{ocf_fact.unit.currency} " if ocf_fact.unit and ocf_fact.unit.currency else ""
+                        canonical_str = f"{curr_str}{fcf_canonical:,.2f}".strip()
+                    else:
+                        canonical_str = f"{fcf_val}"
                     fcf_id = f"derived_fcf_c{col.position:02d}"
                     derived_fact = DerivedFact(
                         fact_id=fcf_id,
@@ -366,7 +384,7 @@ class TableCompiler:
                         input_fact_ids=(ocf_fact.fact_id, capex_fact.fact_id),
                         result_value=ExactNumeric(raw_text=f"{fcf_val}", value=fcf_val),
                         unit=ocf_fact.unit,
-                        canonical_display=f"{ocf_fact.unit.currency or 'USD'} {fcf_canonical:,.2f}",
+                        canonical_display=canonical_str,
                         execution_engine="DECIMAL_KERNEL",
                         verification_state=ValidationStatus.UNRESOLVED,
                     )

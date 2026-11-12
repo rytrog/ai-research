@@ -19,6 +19,7 @@ from my_research.src.compiler.scope_resolver import ScopeResolver
 from my_research.src.compiler.table_compiler import TableCompiler
 from my_research.src.compiler.value_normalizer import ValueNormalizer
 from my_research.src.model.ctir import ValidationStatus
+from my_research.src.model.semantic import ScopeLevel, UnitAssertion
 from my_research.src.model.structural import LogicalRow
 from my_research.src.model.temporal import DurationPeriod, InstantPeriod
 from my_research.src.model.value import (
@@ -155,7 +156,9 @@ def test_end_to_end_compiler_on_sec_adversarial_schedule():
     adapter = AsciiTableScheduleAdapter()
     frag, footnotes, coord_space = adapter.parse(doc, content, table_id="t_sec_10q")
 
-    compiler = TableCompiler()
+    compiler = TableCompiler(
+        table_default_unit=UnitAssertion(currency="USD", scale_exponent=6, source_scope=ScopeLevel.TABLE)
+    )
     snapshot = compiler.compile(
         source_doc=doc,
         fragment=frag,

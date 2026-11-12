@@ -26,6 +26,7 @@ from my_research.src.baselines.markdown_chunker import MarkdownRowGroupChunker
 from my_research.src.baselines.naive_chunker import NaiveFixedWindowChunker
 from my_research.src.chunker.relation_preserving_chunker import RelationPreservingTableChunker
 from my_research.src.compiler.table_compiler import TableCompiler
+from my_research.src.model.semantic import ScopeLevel, UnitAssertion
 from my_research.src.query.engine import CTIRQueryEngine
 
 
@@ -179,7 +180,9 @@ def evaluate_pcc_tensor_chunker(
     adapter = AsciiTableScheduleAdapter()
     frag, footnotes, coord_space = adapter.parse(doc, schedule_text, table_id="t_bench")
 
-    compiler = TableCompiler()
+    compiler = TableCompiler(
+        table_default_unit=UnitAssertion(currency="USD", scale_exponent=6, source_scope=ScopeLevel.TABLE)
+    )
     snapshot = compiler.compile(
         source_doc=doc,
         fragment=frag,
@@ -258,7 +261,8 @@ def evaluate_pcc_tensor_chunker(
         for f in top_chunk.structured_facts:
             val = getattr(f.typed_value, "value", None)
             if val is not None:
-                scaled = val * (10 ** f.unit.scale_exponent)
+                scale_exp = f.unit.scale_exponent if (f.unit and f.unit.scale_exponent is not None) else 0
+                scaled = val * (10 ** scale_exp)
                 if any(val == vt or scaled == vt for vt in valid_targets):
                     has_nva = True
                     break
@@ -286,7 +290,9 @@ def evaluate_pcc_tensor_compiler_kernel(
     adapter = AsciiTableScheduleAdapter()
     frag, footnotes, coord_space = adapter.parse(doc, schedule_text, table_id="t_bench")
 
-    compiler = TableCompiler()
+    compiler = TableCompiler(
+        table_default_unit=UnitAssertion(currency="USD", scale_exponent=6, source_scope=ScopeLevel.TABLE)
+    )
     snapshot = compiler.compile(
         source_doc=doc,
         fragment=frag,

@@ -26,7 +26,10 @@ import pytest
 from my_research.src.compiler.table_compiler import TableCompiler
 from my_research.src.compiler.scope_resolver import ScopeResolver
 from my_research.src.compiler.value_normalizer import ValueNormalizer
-from my_research.src.chunker.relation_preserving_chunker import RelationPreservingTableChunker
+from my_research.src.chunker.relation_preserving_chunker import (
+    ChunkBudgetExceededError,
+    RelationPreservingTableChunker,
+)
 from my_research.src.model.ctir import (
     CTIRSnapshot,
     DerivedFact,
@@ -49,7 +52,7 @@ from my_research.src.model.evidence import (
     TransformationRecord,
     verify_transformation_chain,
 )
-from my_research.src.model.semantic import ScopeLevel, UnitAssertion
+from my_research.src.model.semantic import ResolutionStatus, ScopeConflictResolver, ScopeLevel, UnitAssertion
 from my_research.src.model.source import SourceDocument, SourceRef
 from my_research.src.model.structural import (
     CellNode,
@@ -281,7 +284,7 @@ def test_adv05_failed_snapshot_retrieval_admission_enforcement(base_doc, valid_f
 # ==============================================================================
 # Case 6: Incomplete serialization: Round-trip verification audit
 # Attack: Test whether serialization establishes Deserialize(Serialize(CTIR)) == CTIR.
-# Expected: Verify that serialization preserves all factual contents or audit gaps.
+# Expected: Verify that serialization preserves all factual contents and round-trips losslessly.
 # ==============================================================================
 def test_adv06_incomplete_serialization_round_trip(base_doc, valid_fact_bundle):
     coord = FactCoordinates("e0", "Corp", "m0", "Revenue", (), ("2026",), InstantPeriod(datetime.date(2026, 9, 30)))
@@ -296,23 +299,28 @@ def test_adv06_incomplete_serialization_round_trip(base_doc, valid_fact_bundle):
         derived_facts={"df1": df},
     )
 
+    from my_research.src.storage.serialize import deserialize_ctir_from_json, serialize_ctir_to_json
     json_str = serialize_ctir_to_json(snapshot)
     import json
     data = json.loads(json_str)
 
-    # Audit check: Does the serialization actually contain source facts or only count metadata?
-    has_facts_payload = "source_facts" in data or "facts" in data
-    # The current serialize_ctir_to_json only records facts_count!
-    assert "facts_count" in data, "Serialized JSON missing facts_count!"
-    
-    # Contract C15 audit: if facts_count == 1 but source_facts payload is not in JSON,
-    # round-trip deserialization cannot reconstruct facts without the actual payload.
-    if not has_facts_payload:
-        # Document the discovered serialization gap
-        assert data["facts_count"] == 1
-        # Contract C15 requires complete reconstructibility: Deserialize(Serialize(S)) == S
-        # Flag that serializer needs full fact payload serialization for lossless round-trip
-        print("\n[AUDIT FINDING - CASE 6]: serialize_ctir_to_json emits metadata summary (facts_count) but omits full source_facts dictionary.")
+    # Contract C15 check: Serialized payload MUST contain full source_facts and derived_facts
+    assert "source_facts" in data, (
+        "Security gap T06: serialize_ctir_to_json emits metadata summary (facts_count) but omits full source_facts dictionary!"
+    )
+    assert "derived_facts" in data, "Contract C15 failure: Serialized JSON omits derived_facts dictionary!"
+    assert len(data["source_facts"]) == 1
+
+    # Round-trip verification: Deserialize(Serialize(S)) == S
+    reconstructed = deserialize_ctir_from_json(json_str)
+    assert reconstructed.snapshot_id == snapshot.snapshot_id
+    assert "f1" in reconstructed.source_facts
+    rf = reconstructed.source_facts["f1"]
+    assert rf.canonical_display == fact.canonical_display
+    assert isinstance(rf.typed_value, ExactNumeric)
+    assert rf.typed_value.value == Decimal("100.00")
+    assert rf.coordinates.raw_metric_label == "Revenue"
+    assert "df1" in reconstructed.derived_facts
 
 
 # ==============================================================================
@@ -338,47 +346,70 @@ def test_adv07_chunk_exceeding_token_budget_and_ecc_flags(base_doc, valid_fact_b
         columns={"COL_00": col0, "COL_01": col1},
     )
 
-    # Attack 7A: Run chunker with 512 budget
+    # Attack 7A: Run chunker with 512 budget on oversized row -> Must enforce budget!
     chunker = RelationPreservingTableChunker(token_budget=512, enable_coordinate_closure=False, enable_superheader_closure=False)
-    chunks = chunker.chunk_snapshot(snapshot)
-
-    assert len(chunks) > 0
-    chunk = chunks[0]
-
-    # Audit check: Did the chunk exceed 512 tokens?
-    chunk_tokens = chunker._estimate_tokens(chunk.dense_text)
-    if chunk_tokens > 512:
-        print(f"\n[AUDIT FINDING - CASE 7A]: Single row exceeded token budget: chunk has {chunk_tokens} tokens > 512 budget!")
+    with pytest.raises(ChunkBudgetExceededError):
+        chunker.chunk_snapshot(snapshot)
 
     # Attack 7B: Check if ECC certificate claims header closure when header closure was disabled!
-    ecc = chunk.certificate
-    if not chunker.enable_coordinate_closure and not chunker.enable_superheader_closure:
-        # If headers were disabled, has_header_closure should NOT be True!
-        if ecc.has_header_closure:
-            print(f"\n[AUDIT FINDING - CASE 7B]: ECC certificate has hardcoded has_header_closure=True despite headers being disabled!")
+    coord_normal = FactCoordinates("e0", "Corp", "m0", "Revenue", (), ("2026",), InstantPeriod(datetime.date(2026, 9, 30)))
+    fact_normal = SourceFact("f_norm", "cell_r001_c01", coord_normal, ExactNumeric("100.00", Decimal("100.00")), unit, "USD 100M", valid_fact_bundle)
+    snapshot_normal = CTIRSnapshot(
+        snapshot_id="snap_normal",
+        document=base_doc,
+        source_facts={"f_norm": fact_normal},
+        columns={"COL_00": col0, "COL_01": col1},
+    )
+    chunker_no_headers = RelationPreservingTableChunker(token_budget=2048, enable_coordinate_closure=False, enable_superheader_closure=False)
+    chunks = chunker_no_headers.chunk_snapshot(snapshot_normal)
+    assert len(chunks) > 0
+    ecc = chunks[0].certificate
+    assert ecc.has_header_closure is False, (
+        "Security gap T07: ECC certificate has hardcoded has_header_closure=True despite headers being disabled!"
+    )
+    assert ecc.has_unit_closure is False, (
+        "Security gap T07: ECC certificate has hardcoded has_unit_closure=True despite coordinate closure disabled!"
+    )
 
 
 # ==============================================================================
 # Case 8: Missing unit declaration: Silent USD default trap
 # Attack: Input a generic table (e.g. Headcount: 8,420 or Temperature: 45) with NO currency declared.
-# Expected: Does ScopeResolver silently assume USD millions?
+# Expected: Does ScopeResolver silently assume USD millions? It must remain UNRESOLVED.
 # ==============================================================================
 def test_adv08_missing_unit_declaration_silent_default(base_doc):
     # A generic table reporting headcount or scientific quantities
     resolver_default = ScopeResolver()
     
-    # Audit check: What is resolver_default.table_default_unit?
-    table_unit = resolver_default.table_default_unit
-    
-    # In the audit, we noted:
-    # "A generic table with no unit evidence must not silently inherit a domain-specific default such as USD millions."
-    if table_unit.currency == "USD" and table_unit.scale_exponent == 6:
-        print(f"\n[AUDIT FINDING - CASE 8]: ScopeResolver defaults to currency='USD' and scale=10^6 when no unit is declared!")
+    # Target assertion: ScopeResolver must not silently default to USD millions!
+    assert resolver_default.table_default_unit is None, (
+        "Vulnerability T08: ScopeResolver must not default to USD millions when no unit is declared!"
+    )
+    status, resolved, reason = ScopeConflictResolver.resolve_unit_assertions(
+        cell_unit=None, row_unit=None, col_unit=None, table_unit=None
+    )
+    assert status == ResolutionStatus.UNRESOLVED, f"Expected UNRESOLVED, got {status}"
+    assert resolved is None, f"Expected resolved unit to be None, got {resolved}"
 
     # Verify that an explicit unit with no currency passes without being forced to USD
     unit_headcount = UnitAssertion(currency=None, physical_unit="Headcount Units", scale_exponent=0, source_scope=ScopeLevel.ROW)
     assert unit_headcount.currency is None
     assert unit_headcount.scale_exponent == 0
+
+    # End-to-end check: generic table without unit declarations remains UNRESOLVED and does not assume USD
+    r0 = LogicalRow("ROW_000", 0, None, "DETAIL", "Generic Operational Count", 0, ())
+    col0 = LogicalColumn("COL_00", 0, ("Metric",), role="ROW_HEADER")
+    col1 = LogicalColumn("COL_01", 1, ("2026",))
+    c_stub = CellNode("c_stub", CellRole.ROW_HEADER, GridSpan(0, 1, 0, 1), "Generic Operational Count", None, SourceRef(base_doc.sha256, "0", "0", "c_stub"))
+    c_val = CellNode("c_val", CellRole.DATA, GridSpan(0, 1, 1, 2), "8,420", None, SourceRef(base_doc.sha256, "0", "0", "c_val"))
+    frag = TableFragment("frag_generic", "p0", 1, 2, cells=(c_stub, c_val), rows=(r0,), columns=(col0, col1))
+
+    compiler = TableCompiler()
+    snap = compiler.compile(source_doc=base_doc, fragment=frag, footnotes=[], entity_name="Generic Inc", snapshot_id="snap_gen")
+    assert snap.validation_report.overall_status == ValidationStatus.UNRESOLVED
+    for f in snap.source_facts.values():
+        assert f.unit is None or f.unit.currency is None
+        assert f.verification_state == ValidationStatus.UNRESOLVED
 
 
 # ==============================================================================
@@ -452,9 +483,33 @@ def test_adv10_forged_document_signature_authenticity(base_doc, valid_fact_bundl
 
     verdict, failures = FormalProofVerifier.verify_fact_certificate(cert)
 
-    # Audit check: Does FormalProofVerifier accept this certificate as PASS simply because SHA-256 matched?
-    if verdict == VerificationVerdict.PASS:
-        print("\n[AUDIT FINDING - CASE 10]: FormalProofVerifier checks SHA-256 hash match but does not verify Ed25519 signature against a public key!")
-        # The user's audit noted:
-        # "P0 — ECC is not yet a cryptographic proof system: checks SHA-256 payload digests ... does not verify an Ed25519 signature against a public key."
-        # This confirms the exact audit finding!
+    # Cryptographic Authenticity check: Forged signature must be REJECTED with FAIL
+    assert verdict == VerificationVerdict.FAIL, (
+        "Security gap T10: FormalProofVerifier accepted forged signature because SHA-256 matched!"
+    )
+    assert any("Ed25519" in f or "key" in f for f in failures)
+
+    # Genuine signature check: A legitimately signed certificate evaluates to PASS
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+    priv_key = Ed25519PrivateKey.generate()
+    pub_key = priv_key.public_key()
+    trusted_key_id = "trusted_authority_01"
+    FormalProofVerifier.register_trusted_key(trusted_key_id, pub_key)
+
+    genuine_sig = FormalProofVerifier.sign_fact(
+        certificate_id=cert_id,
+        fact_id="f_sig",
+        canonical_display="100.00",
+        private_key=priv_key,
+        key_id=trusted_key_id,
+    )
+    genuine_cert = EvidenceClosureCertificate(
+        certificate_id=cert_id,
+        fact_id="f_sig",
+        provenance_bundle=valid_fact_bundle,
+        fact=fact,
+        signature=genuine_sig,
+    )
+    g_verdict, g_failures = FormalProofVerifier.verify_fact_certificate(genuine_cert)
+    assert g_verdict == VerificationVerdict.PASS, f"Genuine certificate rejected: {g_failures}"
+    assert len(g_failures) == 0
